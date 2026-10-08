@@ -1,0 +1,140 @@
+name: Fork CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+# Стадии: check-core-patches → typecheck / lint / unit / integration / docker.
+# Установка зависимостей в каждой тяжёлой стадии — через composite-действие
+# ./.github/actions/yarn-install (кэш node_modules по yarn.lock, Node 24).
+# База diff и nx affected: ветка upstream-base (= последний стабильный тег,
+# см. docs/arch/UPSTREAM_BASE.md).
+
+jobs:
+  check-core-patches:
+    name: check-core-patches
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 0
+      - name: Проверка реестра правок ядра
+        run: bash scripts/check-core-patches.sh
+
+  typecheck:
+    name: typecheck
+    needs: check-core-patches
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 0
+      - name: Install
+        uses: ./.github/actions/yarn-install
+      - name: Build twenty-shared
+        run: npx nx build twenty-shared
+      - name: Typecheck (tsgo, без nx-кэша)
+        run: npx nx run-many -t typecheck --skip-nx-cache
+
+  lint:
+    name: lint
+    needs: check-core-patches
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 0
+      - name: Install
+        uses: ./.github/actions/yarn-install
+      - name: Build twenty-oxlint-rules и twenty-shared
+        run: npx nx run-many -t build -p twenty-oxlint-rules twenty-shared
+      - name: Lint (affected от upstream-base)
+        run: npx nx affected -t lint --base=origin/upstream-base --head=HEAD
+
+  unit:
+    name: unit
+    needs: check-core-patches
+    timeout-minutes: 40
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 0
+      - name: Install
+        uses: ./.github/actions/yarn-install
+      - name: Build twenty-shared
+        run: npx nx build twenty-shared
+      - name: Unit tests (nx affected от upstream-base)
+        run: npx nx affected -t test --base=origin/upstream-base --head=HEAD --parallel=3
+
+  integration:
+    name: integration
+    needs: check-core-patches
+    timeout-minutes: 45
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      NODE_ENV: test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 0
+      - name: Install
+        uses: ./.github/actions/yarn-install
+      - name: Build зависимостей
+        run: |
+          npx nx build twenty-shared
+          npx nx build twenty-emails
+      - name: Create test database (отдельная БД от dev)
+        run: PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d postgres -c 'CREATE DATABASE "test";'
+      - name: Integration tests (with-db-reset)
+        run: npx nx run twenty-server:test:integration:with-db-reset
+
+  docker:
+    name: docker
+    needs: check-core-patches
+    timeout-minutes: 45
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - name: Docker build (twenty image)
+        run: docker build --target twenty -f ./packages/twenty-docker/twenty/Dockerfile --tag twenty:ci .
