@@ -20,10 +20,9 @@
 ```bash
 # уже настроено:
 #   upstream  https://github.com/twentyhq/twenty.git  (fetch; push отключён: no_push)
-
-# добавить после создания форка в GitHub UI (URL свой):
-git remote add origin git@github.com:<owner>/<fork>.git
-git push -u origin main upstream-base
+#   origin    git@github.com:HaiiroShizumu/new-crm.git
+#             https://github.com/HaiiroShizumu/new-crm
+# ветки на origin: main, upstream-base
 ```
 
 `upstream` — чистое зеркало: полная история и все теги (клон не shallow, теги не усечены).

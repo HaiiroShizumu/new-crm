@@ -86,7 +86,8 @@ jobs:
   integration:
     name: integration
     needs: check-core-patches
-    timeout-minutes: 45
+    # Полный suite с db-reset + ClickHouse на чистом раннере занимает ~40–50 мин
+    timeout-minutes: 90
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -94,7 +95,6 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: postgres
         ports:
           - 5432:5432
         options: >-
@@ -111,8 +111,26 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      # .env.test задаёт CLICKHOUSE_URL; database:reset truncate'ит ClickHouse —
+      # без сервиса truncate падает / зависает (см. ci-server.yaml).
+      clickhouse:
+        image: clickhouse/clickhouse-server:25.8.8
+        env:
+          CLICKHOUSE_PASSWORD: clickhousePassword
+          CLICKHOUSE_URL: "http://default:clickhousePassword@localhost:8123/twenty"
+        ports:
+          - 8123:8123
+          - 9000:9000
+        options: >-
+          --health-cmd "clickhouse-client --host=localhost --port=9000 --user=default --password=clickhousePassword --query='SELECT 1'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     env:
       NODE_ENV: test
+      ANALYTICS_ENABLED: true
+      CLICKHOUSE_URL: "http://default:clickhousePassword@localhost:8123/twenty"
+      CLICKHOUSE_PASSWORD: clickhousePassword
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
@@ -124,8 +142,13 @@ jobs:
         run: |
           npx nx build twenty-shared
           npx nx build twenty-emails
+          npx nx build twenty-server
       - name: Create test database (отдельная БД от dev)
         run: PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d postgres -c 'CREATE DATABASE "test";'
+      - name: ClickHouse migrate + seed
+        run: |
+          npx nx clickhouse:migrate twenty-server
+          npx nx clickhouse:seed twenty-server
       - name: Integration tests (with-db-reset)
         run: npx nx run twenty-server:test:integration:with-db-reset
 
