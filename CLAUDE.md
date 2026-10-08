@@ -48,3 +48,23 @@ npx nx run twenty-front:graphql:generate      # after GraphQL schema changes (--
 - **Entity file changes need a generated instance command**: `npx nx run twenty-server:database:migrate:generate --name <name> --type <fast|slow>` (slow = adds a data-backfill step).
 - A read-only Postgres MCP server is configured in `.mcp.json` for inspecting workspace data, metadata, and migration results. Writes go through the CLI commands above.
 - E2E login: click "Continue with Email" and use the prefilled credentials.
+
+## Форк
+
+Правила форка Twenty (база и порядок обновления — `docs/arch/UPSTREAM_BASE.md`, реестр правок — `docs/PATCHES.md`):
+
+- Новый код только в `packages/smb-*` или `apps/`; файлы в других местах не создавать.
+- Правка ядра (файл вне `packages/smb-*`, `apps/`, `docs/`, `scripts/`, `smb/`, `.github/`, `.gitlab-ci`) требует строки в `docs/PATCHES.md`; правка больше одной строки — плюс ADR в `docs/arch/NN-<тема>.md`. Без записи падает CI `check-core-patches`.
+- Не писать «тест прошёл», если тест не запускался: указывать `NOT RUN` и причину.
+- Не коммитить `locales/*.po` и `locales/generated/*`, если задача не про переводы.
+- Обновление с upstream — только по регламенту `docs/arch/UPSTREAM_BASE.md` (ветка `update/upstream-<тег>`, конфликты разрешаются только по реестру `docs/PATCHES.md`).
+
+## Форк
+
+Правила форка Twenty (база и порядок обновления — `docs/arch/UPSTREAM_BASE.md`, реестр правок — `docs/PATCHES.md`):
+
+- Новый код только в `packages/smb-*` или `apps/`; файлы в других местах не создавать.
+- Правка ядра (файл вне `packages/smb-*`, `apps/`, `docs/`, `scripts/`, `smb/`, `.github/`, `.gitlab-ci`) требует строки в `docs/PATCHES.md`; правка больше одной строки — плюс ADR в `docs/arch/NN-<тема>.md`. Без записи падает CI `check-core-patches`.
+- Не писать «тест прошёл», если тест не запускался: указывать `NOT RUN` и причину.
+- Не коммитить `locales/*.po` и `locales/generated/*`, если задача не про переводы.
+- Обновление с upstream — только по регламенту `docs/arch/UPSTREAM_BASE.md` (ветка `update/upstream-<тег>`, конфликты разрешаются только по реестру `docs/PATCHES.md`).
