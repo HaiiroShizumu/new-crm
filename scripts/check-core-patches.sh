@@ -35,7 +35,10 @@ done
 # i18n отдельно: *.po и locales/generated/* перегенерируются пайплайном и не
 # коммитятся (docs/PATCHES.md) — для них запись в реестр не предусмотрена,
 # иначе гейт упирался бы в правило, которого нельзя придержаться.
-OURS='(^|/)locales/(generated/|.*\.po$)|^(packages/smb-|apps/|docs/|scripts/|smb/|\.claude/|\.cursor/|\.github/workflows/fork-)'
+# M2 (решение владельца 2026-10-09): код фронта/скина живёт в каталогах
+# packages/twenty-front/src/modules/smb-*. Серверную часть сюда НЕ включаем —
+# её размещение (M1 против M2) выбирается отдельно по A2 п.2.1.
+OURS='(^|/)locales/(generated/|.*\.po$)|^(packages/smb-|apps/|docs/|scripts/|smb/|\.claude/|\.cursor/|\.github/workflows/fork-|packages/twenty-front/src/modules/smb-[a-z0-9-]+/)'
 
 # core.quotepath=false: иначе git оборачивает пути с не-ASCII (кириллица в
 # docs/bitrix-audit/, docs/tooling/) в двойные кавычки, '^docs/' не матчится,

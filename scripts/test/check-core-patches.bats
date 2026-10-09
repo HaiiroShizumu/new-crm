@@ -35,6 +35,10 @@ setup() {
   echo '#!/bin/sh'                > "$UP/scripts/upstream-tool.sh"
   echo 'export const core = 1;'   > "$UP/packages/twenty-server/src/core.ts"
   echo 'export const front = 1;'  > "$UP/packages/twenty-front/src/index.ts"
+  # Файл в smb-skin, СУЩЕСТВУЮЩИЙ в базе: правка такого (даже в нашем каталоге)
+  # всегда требует записи — правило «статус != A -> запись» не знает про OURS.
+  mkdir -p "$UP/packages/twenty-front/src/modules/smb-skin"
+  echo 'export const legacy = 1;' > "$UP/packages/twenty-front/src/modules/smb-skin/legacy-from-upstream.ts" 
 
   git -C "$REPO" init -q
   git -C "$REPO" config user.email test@example.com
@@ -156,4 +160,33 @@ add_row() {
   check --staged
   [ "$status" -eq 1 ]
   [[ "$output" == *"scripts/upstream-tool.sh"* ]]
+}
+
+# --- M2: OURS = ^packages/twenty-front/src/modules/smb-[a-z0-9-]+/ (владелец) ---
+
+@test "M2-1: new file in smb-skin -> exit 0 (A + OURS)" {
+  mkdir -p "$REPO/packages/twenty-front/src/modules/smb-skin/components"
+  echo 'export const New = () => null;' > "$REPO/packages/twenty-front/src/modules/smb-skin/components/New.tsx"
+  git -C "$REPO" add packages/twenty-front/src/modules/smb-skin/components/New.tsx
+  check --staged
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"правок ядра нет"* ]]
+}
+
+@test "M2-2: new file in object-record -> exit 1 (A outside OURS)" {
+  mkdir -p "$REPO/packages/twenty-front/src/modules/object-record"
+  echo 'export const x = 1;' > "$REPO/packages/twenty-front/src/modules/object-record/hotfix.ts"
+  git -C "$REPO" add packages/twenty-front/src/modules/object-record/hotfix.ts
+  check --staged
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"object-record/hotfix.ts"* ]]
+}
+
+@test "M2-3: modify EXISTING file in smb-skin (present in base) -> exit 1" {
+  # файл из baseline: статус M, OURS не помогает — «статус != A -> запись»
+  echo 'export const legacy = 2;' > "$REPO/packages/twenty-front/src/modules/smb-skin/legacy-from-upstream.ts"
+  git -C "$REPO" add packages/twenty-front/src/modules/smb-skin/legacy-from-upstream.ts
+  check --staged
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"smb-skin/legacy-from-upstream.ts"* ]]
 }
