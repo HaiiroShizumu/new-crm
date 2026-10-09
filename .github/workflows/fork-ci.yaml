@@ -48,6 +48,28 @@ jobs:
         run: npx nx build twenty-shared
       - name: Typecheck (tsgo, без nx-кэша)
         run: npx nx run-many -t typecheck --skip-nx-cache
+      - name: Типы скина (явный вердикт после обновления upstream)
+        # Скин (82 файла) живёт ВНУТРИ twenty-front и ссылается на 128 импортов
+        # из ядра — при merge upstream они меняются раньше, чем падает сам типчек
+        # остального кода. Шаг отделяет «сломан скин» от «сломано ядро».
+        # Вывод всегда попадает в Step Summary, даже если основной typecheck красный.
+        if: always()
+        run: |
+          npx nx run twenty-front:typecheck --skip-nx-cache > /tmp/front-typecheck.log 2>&1 || true
+          SKIN=$(grep -cE 'src/modules/smb-(skin|brand)/' /tmp/front-typecheck.log || true)
+          echo "ошибок в smb-*: ${SKIN:-0}"
+          {
+            echo "## Скин: ошибки типов (после обновления upstream)"
+            if [ "${SKIN:-0}" -gt 0 ]; then
+              grep -E 'src/modules/smb-(skin|brand)/' /tmp/front-typecheck.log | head -60
+            else
+              echo "нет"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "${SKIN:-0}" -gt 0 ]; then
+            echo "::error::Upstream изменил сущность, на которую ссылается скин (см. раздел «Прослойка upstream.ts» в docs/reports/R04.md)"
+            exit 1
+          fi
 
   lint:
     name: lint

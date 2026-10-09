@@ -1,0 +1,665 @@
+/*
+  SMB skin. Every rule is scoped to html[data-skin='smb'] so removing the
+  attribute restores the stock Twenty look. Upstream components only carry
+  data-smb-* hooks; all visual decisions live here.
+
+  Surfaces: L0 canvas → L1 panel/rail (--smb-surface-l1) → L2 card (--smb-surface-l2).
+  Text tiers:
+  - canvas (wallpaper):   --color-on-bg / --color-on-bg-muted
+  - glass (panels, rail): --color-text / --color-text-muted
+  - solid (menus, inputs, root surfaces): --color-ink / --color-ink-muted
+*/
+
+@import './smb-records.css';
+/* messenger css подключается на Этапе 4 (мессенджер в v1 отсутствует) */
+/* @import './smb-messenger.css'; */
+
+/* Бренд-слой идёт после темы и до правил скина: при утверждении брендбука
+   сюда перекладываются переопределения --t-*. */
+@import '../../smb-brand/brand.css';
+
+/* ---------- Palette ---------- */
+
+html[data-skin='smb'] {
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 16px;
+  --radius-panel: 22px;
+  --radius-control: 12px;
+
+  --color-accent-soft: color-mix(in srgb, var(--color-accent) 13%, transparent);
+  --chrome-text-shadow: none;
+  --smb-shadow-menu: var(--shadow-soft), 0 8px 20px rgba(0, 0, 0, 0.12);
+  --smb-shadow-primary: 0 2px 8px
+    color-mix(in srgb, var(--color-accent) 28%, transparent);
+  --smb-ease-rail: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Opaque stand-in for glass, used by nested surfaces (sticky cells, inputs)
+     so stacked translucent fills don't compound over the wallpaper */
+  --smb-surface-frost: color-mix(
+    in srgb,
+    var(--color-surface-solid) calc(var(--panel-opacity, 0.55) * 100%),
+    var(--smb-wallpaper-average, var(--smb-canvas-solid))
+  );
+  --smb-glass-fill: color-mix(
+    in srgb,
+    var(--color-surface-solid) calc(var(--panel-opacity, 0.55) * 100%),
+    transparent
+  );
+  --smb-glass-border: color-mix(
+    in srgb,
+    var(--color-border) 55%,
+    transparent
+  );
+
+  /* Surface system: L0 canvas → L1 panel/rail → L2 elevated card */
+  --smb-space-unit: 4px;
+  --smb-card-pad: 12px;
+  --smb-card-gap: 8px;
+  --smb-cell-pad-x: 12px;
+  --smb-cell-pad-y: 8px;
+  --smb-blur-l1: 24px;
+  --smb-blur-l2: 16px;
+  --smb-surface-l1: var(--smb-glass-fill);
+  --smb-surface-l2: var(--smb-surface-frost);
+  --smb-border-l1: var(--smb-glass-border);
+  --smb-border-l2: transparent;
+  --smb-shadow-l1: var(--shadow-soft);
+  --smb-shadow-l2: var(--shadow-soft);
+  --smb-ring-selected: 0 0 0 1px
+    color-mix(in srgb, var(--color-accent) 45%, transparent);
+  --smb-row-divider: color-mix(
+    in srgb,
+    var(--t-border-color-light) 55%,
+    transparent
+  );
+  --smb-row-hover: color-mix(in srgb, var(--smb-fg) 4%, transparent);
+  --smb-row-selected: color-mix(in srgb, var(--color-accent) 14%, transparent);
+}
+
+html[data-skin='smb'].light {
+  --smb-canvas-solid: #f4f4f5;
+  --color-bg: #f4f4f5;
+  --color-surface: #ffffff;
+  --color-surface-solid: #ffffff;
+  --color-surface-muted: #f4f4f5;
+  --color-text: #09090b;
+  --color-text-muted: #52525b;
+  --color-ink: #09090b;
+  --color-ink-muted: #52525b;
+  --color-control: rgba(255, 255, 255, 0.4);
+  --color-control-border: rgba(24, 24, 27, 0.1);
+  --color-border: rgba(24, 24, 27, 0.12);
+  --color-overlay: #ffffff;
+  --color-on-bg: rgba(9, 9, 11, 0.78);
+  --color-on-bg-muted: rgba(9, 9, 11, 0.52);
+  --shadow-soft:
+    0 4px 16px rgba(24, 24, 27, 0.06), 0 1px 3px rgba(24, 24, 27, 0.04);
+  --smb-rail-shadow: 8px 0 24px rgba(24, 24, 27, 0.12);
+  --smb-surface-recessed: color-mix(in srgb, var(--smb-fg) 6%, transparent);
+  --smb-scrim: rgba(9, 9, 11, 0.04);
+}
+
+html[data-skin='smb'].dark {
+  --smb-canvas-solid: #121212;
+  --color-bg: #121212;
+  --color-surface: #1e1e1e;
+  --color-surface-solid: #1e1e1e;
+  --color-surface-muted: #2a2a2a;
+  --color-text: #fafafa;
+  --color-text-muted: #a1a1aa;
+  --color-ink: #fafafa;
+  --color-ink-muted: #a1a1aa;
+  --color-control: #1e1e1e;
+  --color-control-border: rgba(255, 255, 255, 0.12);
+  --color-border: rgba(255, 255, 255, 0.12);
+  --color-overlay: #1c1c1c;
+  --color-on-bg: rgba(255, 255, 255, 0.78);
+  --color-on-bg-muted: rgba(255, 255, 255, 0.55);
+  --shadow-soft: 0 4px 18px rgba(0, 0, 0, 0.36), 0 1px 3px rgba(0, 0, 0, 0.24);
+  --smb-rail-shadow: 10px 0 28px rgba(0, 0, 0, 0.45);
+  --smb-surface-recessed: color-mix(in srgb, var(--smb-fg) 8%, transparent);
+  --smb-scrim: rgba(0, 0, 0, 0.28);
+}
+
+/* With a wallpaper, titles start white until the luminance sample decides */
+html[data-skin='smb'][data-wallpaper='true'] {
+  --color-bg: transparent;
+  --color-on-bg: rgba(255, 255, 255, 0.78);
+  --color-on-bg-muted: rgba(255, 255, 255, 0.55);
+}
+
+/* ---------- Twenty token remap: root-only ---------- */
+
+html[data-skin='smb'] {
+  --t-font-family: Manrope, system-ui, sans-serif;
+  --t-background-noisy: none;
+
+  --t-background-transparent-primary: color-mix(
+    in srgb,
+    var(--color-surface-solid) 94%,
+    transparent
+  );
+  --t-background-transparent-secondary: color-mix(
+    in srgb,
+    var(--color-surface-solid) 88%,
+    transparent
+  );
+
+  --t-blur-light: blur(12px);
+  --t-blur-medium: blur(20px);
+  --t-blur-strong: blur(28px);
+
+  --t-border-color-medium: var(--color-border);
+  --t-border-color-light: color-mix(
+    in srgb,
+    var(--color-border) 60%,
+    transparent
+  );
+  --t-border-color-strong: color-mix(
+    in srgb,
+    var(--color-ink) 18%,
+    transparent
+  );
+
+  --t-border-radius-xs: var(--radius-xs);
+  --t-border-radius-sm: var(--radius-sm);
+  --t-border-radius-sm-round: var(--radius-sm);
+  --t-border-radius-md: var(--radius-md);
+  --t-border-radius-md-round: var(--radius-md);
+  --t-border-radius-lg: var(--radius-lg);
+  --t-border-radius-xl: var(--radius-xl);
+  --t-border-radius-xxl: var(--radius-panel);
+
+  --t-box-shadow-light: var(--shadow-soft);
+  --t-box-shadow-strong: var(--smb-shadow-menu);
+
+  /* Twenty's blue is its UI accent; select-field tags use --t-tag-* and stay untouched */
+  --t-color-blue: var(--color-accent);
+  --t-color-blue9: var(--color-accent);
+  --t-color-blue10: color-mix(in srgb, var(--color-accent) 88%, black);
+  --t-color-blue11: color-mix(in srgb, var(--color-accent) 80%, black);
+  --t-color-blue12: color-mix(in srgb, var(--color-accent) 70%, black);
+  --t-accent-primary: color-mix(
+    in srgb,
+    var(--color-accent) 30%,
+    var(--color-surface-solid)
+  );
+  --t-accent-secondary: color-mix(
+    in srgb,
+    var(--color-accent) 30%,
+    var(--color-surface-solid)
+  );
+  --t-accent-tertiary: color-mix(
+    in srgb,
+    var(--color-accent) 14%,
+    var(--color-surface-solid)
+  );
+  --t-accent-quaternary: color-mix(
+    in srgb,
+    var(--color-accent) 7%,
+    var(--color-surface-solid)
+  );
+  --t-accent-accent3570: color-mix(
+    in srgb,
+    var(--color-accent) 55%,
+    transparent
+  );
+  --t-accent-accent4060: color-mix(
+    in srgb,
+    var(--color-accent) 55%,
+    transparent
+  );
+  --t-accent-accent8: color-mix(in srgb, var(--color-accent) 55%, transparent);
+  --t-accent-accent9: var(--color-accent);
+  --t-accent-accent10: var(--color-accent);
+  --t-accent-accent11: var(--color-accent);
+  --t-border-color-blue: color-mix(
+    in srgb,
+    var(--color-accent) 45%,
+    transparent
+  );
+  --t-background-transparent-blue: color-mix(
+    in srgb,
+    var(--color-accent) 10%,
+    transparent
+  );
+
+  --smb-surface-base: var(--color-surface-solid);
+  --smb-fg: var(--color-ink);
+  --smb-fg-muted: var(--color-ink-muted);
+}
+
+/* Glass scopes switch the base surface and text tier */
+html[data-skin='smb'] [data-smb-panel],
+html[data-skin='smb'] [data-smb-rail-wrap],
+html[data-skin='smb'] [data-side-panel],
+html[data-skin='smb'] [data-page-surface='side-panel'] {
+  --smb-surface-base: var(--smb-surface-frost);
+  --smb-fg: var(--color-text);
+  --smb-fg-muted: var(--color-text-muted);
+}
+
+html[data-skin='smb'][data-frames='false'] [data-smb-panel] {
+  --smb-surface-base: var(--smb-wallpaper-average, var(--smb-canvas-solid));
+}
+
+/* Custom properties resolve where they're declared, so the derived set is
+   re-declared on every scope that changes its inputs */
+html[data-skin='smb'],
+html[data-skin='smb'] [data-smb-panel],
+html[data-skin='smb'] [data-smb-rail-wrap],
+html[data-skin='smb'] [data-side-panel],
+html[data-skin='smb'] [data-page-surface='side-panel'] {
+  --t-background-primary: var(--smb-surface-base);
+  --t-background-secondary: color-mix(
+    in srgb,
+    var(--smb-fg) 2.5%,
+    var(--smb-surface-base)
+  );
+  --t-background-tertiary: color-mix(
+    in srgb,
+    var(--smb-fg) 5%,
+    var(--smb-surface-base)
+  );
+  --t-background-quaternary: color-mix(
+    in srgb,
+    var(--smb-fg) 8%,
+    var(--smb-surface-base)
+  );
+  --t-font-color-primary: var(--smb-fg);
+  --t-font-color-secondary: var(--smb-fg-muted);
+  --t-font-color-tertiary: color-mix(
+    in srgb,
+    var(--smb-fg-muted) 82%,
+    transparent
+  );
+  --t-font-color-light: color-mix(
+    in srgb,
+    var(--smb-fg-muted) 62%,
+    transparent
+  );
+  --t-font-color-extra-light: color-mix(
+    in srgb,
+    var(--smb-fg-muted) 45%,
+    transparent
+  );
+}
+
+/* Chrome sitting directly on the canvas */
+html[data-skin='smb'] [data-smb-top-bar],
+html[data-skin='smb'] [data-smb-page-header] {
+  --t-background-primary: var(--color-control);
+  --t-font-color-primary: var(--color-on-bg);
+  --t-font-color-secondary: var(--color-on-bg-muted);
+  --t-font-color-tertiary: var(--color-on-bg-muted);
+  --t-font-color-light: color-mix(
+    in srgb,
+    var(--color-on-bg-muted) 75%,
+    transparent
+  );
+}
+
+/* ---------- Global ---------- */
+
+html[data-skin='smb'] {
+  background: var(--smb-canvas-solid);
+  color: var(--color-ink);
+}
+
+/* The wallpaper layers sit at z-index -1, under any in-flow background */
+html[data-skin='smb'] body {
+  background: transparent;
+  font-family: var(--t-font-family);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Softer chrome icons: thinner strokes and a touch of transparency so
+   pure black/white marks sit quieter on glass and wallpaper. */
+html[data-skin='smb'] svg.tabler-icon {
+  opacity: 0.78;
+}
+
+html[data-skin='smb'] svg.tabler-icon[stroke-width='2'] {
+  stroke-width: 1.4;
+}
+
+html[data-skin='smb'] [aria-current='page'] svg.tabler-icon,
+html[data-skin='smb'] [data-active] svg.tabler-icon {
+  opacity: 0.92;
+}
+
+html[data-skin='smb'] ::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-text-muted) 35%, transparent);
+  border-radius: 999px;
+}
+
+/* ---------- Wallpaper ---------- */
+
+html[data-skin='smb'] [data-smb-wallpaper-layer] {
+  pointer-events: none;
+  position: fixed;
+  z-index: -1;
+}
+
+html[data-skin='smb'] [data-smb-wallpaper-layer='fallback'] {
+  background: var(--color-bg);
+  inset: 0;
+}
+
+html[data-skin='smb'] [data-smb-wallpaper-layer='image'] {
+  background-image: var(--app-bg-image);
+  background-position: center;
+  background-size: cover;
+  filter: blur(var(--app-bg-blur, 12px));
+  inset: -40px;
+  transform: scale(1.05);
+}
+
+html[data-skin='smb'] [data-smb-wallpaper-layer='dim'] {
+  background: rgb(var(--app-bg-dim-rgb, 0 0 0) / var(--app-bg-dim, 0));
+  inset: 0;
+}
+
+/* ---------- App shell ---------- */
+
+html[data-skin='smb'] [data-smb-layout] {
+  background: transparent;
+}
+
+html[data-skin='smb'] {
+  --smb-shell-gap: 8px;
+}
+
+html[data-skin='smb'][data-sidebar-mode='edge'] {
+  --smb-shell-gap: 10px;
+}
+
+html[data-skin='smb'] [data-smb-page-container] {
+  gap: var(--smb-shell-gap);
+  padding: 10px;
+  transition:
+    gap 0.32s var(--smb-ease-rail),
+    padding 0.32s var(--smb-ease-rail);
+}
+
+html[data-skin='smb'] [data-smb-rail-wrap],
+html[data-skin='smb'] [data-smb-surface='l1'] {
+  backdrop-filter: blur(var(--smb-blur-l1));
+  background: var(--smb-surface-l1);
+  border: 1px solid var(--smb-border-l1);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--smb-shadow-l1);
+  isolation: isolate;
+}
+
+html[data-skin='smb'] [data-smb-rail-wrap] {
+  /* overflow:hidden clipped the shadow; clip children instead */
+  box-shadow: var(--smb-rail-shadow);
+  overflow: visible;
+}
+
+html[data-skin='smb'] [data-smb-surface='l2'] {
+  backdrop-filter: blur(var(--smb-blur-l2));
+  background: var(--smb-surface-l2);
+  border: 1px solid var(--smb-border-l2);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--smb-shadow-l2);
+  isolation: isolate;
+}
+
+html[data-skin='smb'] [data-smb-rail-wrap] > * {
+  border-radius: inherit;
+  height: 100%;
+  overflow: hidden;
+}
+
+html[data-skin='smb'][data-sidebar-mode='edge'] [data-smb-page-container] {
+  padding: 0 10px 0 0;
+}
+
+html[data-skin='smb'][data-sidebar-mode='edge'] [data-smb-rail-wrap] {
+  border-bottom: none;
+  border-left: none;
+  border-radius: 0;
+  border-top: none;
+  box-shadow: var(--smb-rail-shadow);
+}
+
+html[data-skin='smb'][data-sidebar-mode='edge'] [data-smb-main] {
+  margin-block: 10px;
+}
+
+html[data-skin='smb'][data-sidebar-open='false'] [data-smb-rail-wrap] {
+  display: none;
+}
+
+html[data-skin='smb'][data-sidebar-open='false'] [data-smb-page-container] {
+  gap: 0;
+}
+
+html[data-skin='smb'] [data-smb-rail-wrap] .navigation-drawer-item {
+  border-radius: var(--radius-lg);
+  color: var(--color-text-muted);
+  font-weight: 700;
+  min-height: 36px;
+  overflow: hidden;
+  text-shadow: var(--chrome-text-shadow);
+  transition:
+    background 0.15s ease,
+    color 0.2s ease;
+}
+
+html[data-skin='smb'] [data-smb-rail-wrap] .navigation-drawer-item svg {
+  height: 24px;
+  stroke: currentColor;
+  width: 24px;
+}
+
+html[data-skin='smb']
+  [data-smb-rail-wrap][data-expanded='false']
+  .navigation-drawer-item {
+  height: 40px;
+  min-height: 40px;
+  width: 40px;
+}
+
+html[data-skin='smb'] [data-smb-rail-wrap] .navigation-drawer-item:hover {
+  background: var(--color-control);
+  color: var(--color-ink);
+  text-shadow: none;
+}
+
+html[data-skin='smb']
+  [data-smb-rail-wrap]
+  .navigation-drawer-item[aria-current='page'] {
+  background: color-mix(in srgb, var(--color-accent) 16%, transparent);
+  color: var(--color-accent);
+  text-shadow: none;
+}
+
+/* Equal side tracks keep the mode tabs centred */
+html[data-skin='smb'] [data-smb-top-bar] {
+  grid-template-columns: minmax(max-content, 1fr) auto minmax(max-content, 1fr);
+  text-shadow: var(--chrome-text-shadow);
+}
+
+html[data-skin='smb'] button[data-icon-size='xs'] {
+  --tw-icon-button-icon-size: 16;
+}
+
+html[data-skin='smb'] button[data-icon-size='sm'] {
+  --tw-icon-button-icon-size: 18;
+}
+
+html[data-skin='smb'] button[data-icon-size='md'] {
+  --tw-icon-button-icon-size: 20;
+}
+
+html[data-skin='smb'] [data-smb-top-bar] button[data-icon-size],
+html[data-skin='smb'] [data-smb-rail-wrap] button[data-icon-size] {
+  --tw-icon-button-icon-size: 24;
+}
+
+/* Sit directly on the wallpaper, so they take the on-bg text tier */
+html[data-skin='smb'] [data-smb-top-actions] button:not([data-smb-top-user]) {
+  --t-font-color-primary: var(--color-on-bg);
+  --t-font-color-secondary: var(--color-on-bg);
+  --t-font-color-tertiary: var(--color-on-bg-muted);
+  --t-font-color-light: var(--color-on-bg-muted);
+
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  box-shadow: none;
+  height: 36px;
+  justify-content: center;
+  width: 36px;
+}
+
+html[data-skin='smb'] [data-smb-top-actions] button:hover {
+  background: color-mix(in srgb, var(--color-on-bg) 12%, transparent);
+}
+
+html[data-skin='smb'] [data-smb-top-user] {
+  color: var(--color-on-bg);
+  font-weight: 600;
+  transition: background-color 120ms ease;
+}
+
+html[data-skin='smb'] [data-smb-top-user] [data-size='xl'] {
+  block-size: 32px;
+  font-size: 14px;
+  inline-size: 32px;
+}
+
+html[data-skin='smb'] [data-smb-top-clock] {
+  color: var(--color-on-bg);
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+/* Whenever the top bar is mounted it hosts the expand toggle, so page
+   headers must not repeat it; without the top bar (mobile, fullscreen) they
+   keep theirs */
+html[data-skin='smb']:has([data-smb-top-bar])
+  [data-navigation-drawer-toggle='right']:not([data-smb-top-bar] *) {
+  display: none;
+}
+
+/* ---------- Page: title in top bar, body in a glass panel ---------- */
+
+html[data-skin='smb'] [data-smb-page] {
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* The wrapper's width: 0 only works as a row flex item; in the column
+   layout it would collapse the panel to a sliver */
+html[data-skin='smb'] [data-smb-panel-wrap] {
+  min-height: 0;
+  width: auto;
+}
+
+html[data-skin='smb'] [data-smb-page-header] {
+  background: transparent;
+  min-height: 52px;
+  padding-inline: 10px;
+}
+
+html[data-skin='smb'] [data-smb-page-title] {
+  color: var(--color-on-bg);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  transition: color 0.2s ease;
+}
+
+html[data-skin='smb'] [data-smb-chrome-title] [data-smb-page-title] {
+  color: var(--color-on-bg);
+  text-shadow: var(--chrome-text-shadow);
+}
+
+html[data-skin='smb'] [data-smb-chrome-actions] {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+html[data-skin='smb'] [data-smb-page-title] > svg,
+html[data-skin='smb'] [data-smb-page-title-icon] {
+  display: none;
+}
+
+html[data-skin='smb'] [data-smb-page-title='start'] {
+  font-size: 22px;
+}
+
+html[data-skin='smb'] [data-smb-page-title='center'] {
+  font-size: 16px;
+}
+
+html[data-skin='smb'] [data-smb-panel] {
+  backdrop-filter: blur(var(--smb-blur-l1));
+  background: var(--smb-surface-l1);
+  border: 1px solid var(--smb-border-l1);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--smb-shadow-l1);
+  isolation: isolate;
+}
+
+/* Side panel: same L1 glass as page panels, rounded on the open edge */
+html[data-skin='smb'] [data-side-panel] {
+  isolation: isolate;
+  overflow: hidden;
+}
+
+html[data-skin='smb'] [data-side-panel] > aside {
+  backdrop-filter: blur(var(--smb-blur-l1));
+  background: var(--smb-surface-l1);
+  border-left: 1px solid var(--smb-border-l1);
+  border-radius: var(--radius-panel) 0 0 var(--radius-panel);
+  box-shadow: var(--smb-shadow-l1);
+  isolation: isolate;
+}
+
+html[data-skin='smb'] [data-page-surface='side-panel'] {
+  background: transparent;
+}
+
+html[data-skin='smb'][data-frames='false'] [data-smb-panel] {
+  backdrop-filter: none;
+  background: none;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+html[data-skin='smb'][data-frames='false'] [data-side-panel] > aside,
+html[data-skin='smb'][data-frames='false'] [data-page-surface='side-panel'] {
+  backdrop-filter: none;
+  background: none;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+@media (max-width: 768px) {
+  html[data-skin='smb'] [data-smb-page-container],
+  html[data-skin='smb'][data-sidebar-mode='edge'] [data-smb-page-container] {
+    gap: 0;
+    padding: 0;
+  }
+
+  html[data-skin='smb'] [data-smb-panel] {
+    border-radius: 0;
+  }
+}
+
+@media print {
+  html[data-skin='smb'] [data-smb-wallpaper-layer] {
+    display: none;
+  }
+}

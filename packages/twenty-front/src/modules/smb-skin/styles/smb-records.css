@@ -1,0 +1,452 @@
+/*
+  SMB skin, record views. Keyed off data-smb-object / data-smb-view set by
+  RecordIndexContainer plus the stable class names Twenty already renders
+  (table-row, table-cell, header-cell, record-table-cell-content).
+
+  Nested surfaces stay opaque (mixed into --smb-surface-base) because sticky
+  table cells and board headers scroll over other content.
+*/
+
+/* ---------- Tables (any object) ---------- */
+
+html[data-skin='smb'] [data-smb-table] div.header-cell,
+html[data-skin='smb'] [data-smb-table] div.table-cell,
+html[data-skin='smb'] [data-smb-table] div.table-cell-0-0 {
+  border-right-color: transparent;
+}
+
+html[data-skin='smb']
+  [data-smb-table-header]
+  div.header-cell
+  .record-table-cell-content {
+  color: var(--t-font-color-tertiary);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Meta columns read muted; the label column keeps the primary tier */
+html[data-skin='smb']
+  [data-smb-table]
+  .table-row
+  div.table-cell:not(.record-table-column-field-0) {
+  --t-font-color-primary: var(--smb-fg-muted);
+}
+
+html[data-skin='smb']
+  [data-smb-table]
+  .table-row
+  div.record-table-column-field-0
+  .record-table-cell-content {
+  font-weight: 700;
+}
+
+/* Body cells paint a solid color resolved from the JS theme, which hides the
+   panel glass. Everything goes clear; sticky parts only switch to the opaque
+   frost while content actually scrolls beneath them, because per-cell
+   backdrop-filter breaks compositing in Chromium */
+html[data-skin='smb'] [data-smb-table] {
+  --smb-table-tint: color-mix(
+    in srgb,
+    var(--color-surface-solid) calc(var(--panel-opacity, 0.55) * 45%),
+    transparent
+  );
+}
+
+html[data-skin='smb'] [data-smb-table] div.table-cell,
+html[data-skin='smb'] [data-smb-table] div.table-cell-0-0 {
+  --smb-cell-base: transparent;
+
+  background: var(--smb-cell-base);
+}
+
+html[data-skin='smb'] [data-smb-table] div.header-cell {
+  background: transparent;
+}
+
+/* Checkbox/drag headers paint their own solid primary fill; clear it so the
+   shared header tint reads as one band instead of a broken patch */
+html[data-skin='smb']
+  [data-smb-table]
+  div.header-cell.record-table-column-checkbox,
+html[data-skin='smb']
+  [data-smb-table]
+  div.header-cell.record-table-column-drag-and-drop,
+html[data-skin='smb']
+  [data-smb-table]
+  div.header-cell.record-table-column-checkbox
+  > *,
+html[data-skin='smb']
+  [data-smb-table]
+  div.header-cell.record-table-column-drag-and-drop
+  > * {
+  background: transparent;
+  background-color: transparent;
+}
+
+html[data-skin='smb'] [data-smb-table-header] {
+  background: var(--smb-table-tint);
+}
+
+/* Footer: denser frost than the panel glass, rounded on the outer corners */
+html[data-skin='smb'] [data-smb-table] div.footer-cell {
+  --smb-footer-fill: color-mix(
+    in srgb,
+    var(--color-surface-solid)
+      calc(min(1, var(--panel-opacity, 0.55) + 0.28) * 100%),
+    var(--smb-wallpaper-average, var(--smb-canvas-solid))
+  );
+
+  background: var(--smb-footer-fill);
+  background-color: var(--smb-footer-fill);
+  border-right-color: transparent;
+}
+
+html[data-skin='smb'] [data-smb-table-footer] > :first-child {
+  border-bottom-left-radius: var(--radius-lg);
+}
+
+html[data-skin='smb'] [data-smb-table-footer] > :last-child {
+  border-bottom-right-radius: var(--radius-lg);
+}
+
+@container style(--record-table-vertical-scroll-visibility: visible) {
+  html[data-skin='smb'] [data-smb-table-header] {
+    background: var(--smb-surface-frost);
+  }
+}
+
+@container style(--record-table-horizontal-scroll-visibility: visible) {
+  html[data-skin='smb']
+    [data-smb-table]
+    div:is(.table-cell, .table-cell-0-0, .header-cell):is(
+      .record-table-column-checkbox,
+      .record-table-column-drag-and-drop,
+      .record-table-column-field-0
+    ) {
+    --smb-cell-base: var(--smb-surface-frost);
+
+    background: var(--smb-cell-base);
+  }
+}
+
+html[data-skin='smb']
+  [data-smb-table]
+  div:is(:hover, [data-focused='true'], [data-active='true'])
+  > div.table-cell {
+  background: color-mix(in srgb, var(--smb-fg) 4%, var(--smb-cell-base));
+}
+
+html[data-skin='smb']
+  [data-smb-table]
+  div[data-focused]
+  > div.table-cell[data-smb-cell-selected] {
+  background: color-mix(
+    in srgb,
+    var(--color-accent) 14%,
+    var(--smb-cell-base)
+  );
+}
+
+/* Cell focus/hover portals: no per-cell outline — only the row tint shows */
+html[data-skin='smb'] [data-smb-table] [data-smb-cell-portal] {
+  background: transparent;
+  background-color: transparent;
+  outline: none;
+}
+
+html[data-skin='smb'] [data-smb-table] [data-smb-cell-edit-btn] {
+  border: none;
+  background: transparent;
+}
+
+/* Label/relation chips read as plain fields, not bordered pills */
+html[data-skin='smb'] [data-smb-table] [data-variant='soft'],
+html[data-skin='smb'] [data-smb-table] [data-variant='solid'] {
+  background: transparent;
+  padding-inline-start: 0;
+}
+
+html[data-skin='smb']
+  [data-smb-table]
+  [data-variant='soft'][data-clickable]:not([data-disabled]):hover,
+html[data-skin='smb']
+  [data-smb-table]
+  [data-variant='solid'][data-clickable]:not([data-disabled]):hover {
+  background: color-mix(in srgb, var(--smb-fg) 5%, transparent);
+}
+
+html[data-skin='smb']
+  [data-smb-table]
+  div[data-focused='true']
+  > div.table-cell,
+html[data-skin='smb']
+  [data-smb-table]
+  div[data-active='true']
+  > div.table-cell,
+html[data-skin='smb']
+  [data-smb-table]
+  div[data-focused='true']
+  > div.table-cell-0-0,
+html[data-skin='smb']
+  [data-smb-table]
+  div[data-active='true']
+  > div.table-cell-0-0 {
+  border-bottom-color: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* ---------- List view (any object) ---------- */
+
+html[data-skin='smb'] [data-smb-view='list'] [data-smb-list-row],
+html[data-skin='smb'] [data-smb-view='folders'] [data-smb-list-row] {
+  border-bottom: 1px solid var(--smb-row-divider);
+  padding-bottom: 0;
+}
+
+html[data-skin='smb'] [data-smb-view='list'] [data-smb-list-row] > div {
+  height: auto;
+  min-height: 34px;
+  padding: 8px 4px;
+}
+
+html[data-skin='smb'] [data-smb-view='list'] [data-smb-list-row]:hover > div,
+html[data-skin='smb'] [data-smb-view='folders'] [data-smb-list-row]:hover {
+  background: var(--smb-row-hover);
+}
+
+html[data-skin='smb'] [data-smb-view='list'] [data-smb-list-row]:active > div,
+html[data-skin='smb']
+  [data-smb-view='folders']
+  [data-smb-list-row][aria-selected='true'] {
+  background: var(--smb-row-selected);
+}
+
+html[data-skin='smb'] [data-smb-view='folders'] [data-smb-list-row] {
+  border-bottom-color: var(--smb-row-divider);
+}
+
+html[data-skin='smb'] [data-smb-view='list'] [data-smb-group-section] {
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+html[data-skin='smb'] [data-smb-view='list'] [data-smb-group-section] span {
+  font-size: 11px;
+  font-weight: 800;
+}
+
+/* ---------- Boards: shared column panels ---------- */
+
+html[data-skin='smb']
+  :is(
+    [data-smb-object='opportunity'],
+    [data-smb-object='task']
+  )[data-smb-view='kanban']
+  [data-record-board-column-id],
+html[data-skin='smb']
+  :is(
+    [data-smb-object='opportunity'],
+    [data-smb-object='task']
+  )[data-smb-view='kanban']
+  [data-smb-board-column-header] {
+  border-left: none;
+}
+
+/* ---------- Opportunities: stage columns with dividers ---------- */
+
+html[data-skin='smb']
+  [data-smb-object='opportunity'][data-smb-view='kanban']
+  [id^='record-board-header-'] {
+  height: auto;
+  min-height: 72px;
+}
+
+html[data-skin='smb']
+  [data-smb-object='opportunity'][data-smb-view='kanban']
+  [data-smb-board-column-header],
+html[data-skin='smb']
+  [data-smb-object='opportunity'][data-smb-view='kanban']
+  [data-record-board-column-id] {
+  background-color: transparent;
+  box-sizing: border-box;
+  margin-right: 0;
+  padding-inline: var(--smb-card-pad);
+}
+
+html[data-skin='smb']
+  [data-smb-object='opportunity'][data-smb-view='kanban']
+  [data-smb-board-column-header]:not(:last-child),
+html[data-skin='smb']
+  [data-smb-object='opportunity'][data-smb-view='kanban']
+  [data-record-board-column-id]:not(:last-child) {
+  border-right: none;
+}
+
+html[data-skin='smb']
+  [data-smb-object='opportunity'][data-smb-view='kanban']
+  [data-smb-board-column-header] {
+  border-radius: 0;
+  padding-bottom: calc(var(--smb-space-unit) * 1.5);
+  padding-top: var(--smb-card-pad);
+}
+
+html[data-skin='smb']
+  [data-smb-object='opportunity'][data-smb-view='kanban']
+  [data-record-board-column-id] {
+  border-radius: 0;
+  padding-bottom: calc(var(--smb-space-unit) * 2.5);
+  padding-top: var(--smb-space-unit);
+}
+
+html[data-skin='smb']
+  [data-smb-object='opportunity'][data-smb-view='kanban']
+  [data-smb-board-column-header-card] {
+  width: 100%;
+}
+
+html[data-skin='smb']
+  [data-smb-object='opportunity'][data-smb-view='kanban']
+  [data-smb-board-column-header-card]
+  > div {
+  min-width: 0;
+  width: 100%;
+}
+
+html[data-skin='smb']
+  [data-smb-object='opportunity'][data-smb-view='kanban']
+  [data-smb-board-column-aggregate] {
+  min-width: 0;
+  width: 100%;
+}
+
+html[data-skin='smb']
+  [data-smb-object='opportunity'][data-smb-view='kanban']
+  [data-smb-board-column-aggregate]
+  span {
+  color: var(--t-font-color-primary);
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+html[data-skin='smb']
+  [data-smb-object='opportunity'][data-smb-view='kanban']
+  [data-smb-board-column-aggregate]
+  button,
+html[data-skin='smb']
+  [data-smb-object='opportunity'][data-smb-view='kanban']
+  [data-smb-board-column-aggregate]
+  [id^='record-board-column-aggregate-dropdown-'] {
+  justify-content: flex-start;
+  padding-inline: 0;
+  width: 100%;
+}
+
+html[data-skin='smb'] [data-smb-card='opportunity'],
+html[data-skin='smb'] [data-smb-card='task'] {
+  --record-card-background-color: var(--smb-surface-l2);
+
+  backdrop-filter: blur(var(--smb-blur-l2));
+  background-color: var(--smb-surface-l2);
+  border: none;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--smb-shadow-l2);
+  cursor: grab;
+  isolation: isolate;
+}
+
+html[data-skin='smb'] [data-smb-card='task'] {
+  display: flex;
+  flex-direction: column;
+  min-height: 110px;
+}
+
+html[data-skin='smb'] [data-smb-card='opportunity']:hover,
+html[data-skin='smb'] [data-smb-card='opportunity'][data-active='true'],
+html[data-skin='smb'] [data-smb-card='opportunity'][data-focused='true'],
+html[data-skin='smb'] [data-smb-card='opportunity'][data-selected='true'],
+html[data-skin='smb'] [data-smb-card='task']:hover,
+html[data-skin='smb'] [data-smb-card='task'][data-active='true'],
+html[data-skin='smb'] [data-smb-card='task'][data-focused='true'],
+html[data-skin='smb'] [data-smb-card='task'][data-selected='true'] {
+  border: none;
+}
+
+html[data-skin='smb'] [data-smb-card='opportunity'][data-active='true'],
+html[data-skin='smb'] [data-smb-card='opportunity'][data-selected='true'],
+html[data-skin='smb'] [data-smb-card='task'][data-active='true'],
+html[data-skin='smb'] [data-smb-card='task'][data-selected='true'] {
+  box-shadow: var(--smb-shadow-l2), var(--smb-ring-selected);
+}
+
+html[data-skin='smb'] [data-smb-card='opportunity'] > :first-child,
+html[data-skin='smb'] [data-smb-card='task'] > :first-child {
+  height: auto;
+  padding: var(--smb-card-pad) var(--smb-card-pad)
+    calc(var(--smb-space-unit) * 1.5);
+}
+
+html[data-skin='smb'] [data-smb-card='task'] > :first-child {
+  align-items: flex-start;
+}
+
+html[data-skin='smb'] [data-smb-card='opportunity'] > :first-child span {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+/* ---------- Tasks: slim board ---------- */
+
+html[data-skin='smb']
+  [data-smb-object='task'][data-smb-view='kanban']
+  [id^='record-board-'] {
+  scrollbar-width: none;
+}
+
+html[data-skin='smb']
+  [data-smb-object='task'][data-smb-view='kanban']
+  [data-smb-board-column-header]
+  span {
+  color: var(--t-font-color-tertiary);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+html[data-skin='smb'] [data-smb-card='task'] > :first-child span {
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  font-size: 13px;
+  font-weight: 700;
+  -webkit-line-clamp: 3;
+  line-height: 1.3;
+  white-space: normal;
+}
+
+html[data-skin='smb'] [data-smb-card='task'] > :last-child {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+/* ---------- Tasks: list rows ---------- */
+
+html[data-skin='smb']
+  [data-smb-object='task'][data-smb-view='list']
+  [data-smb-list-row]
+  > div {
+  gap: 10px;
+}
+
+html[data-skin='smb']
+  [data-smb-list-row]:has([data-smb-task-check][aria-checked='true'])
+  > div
+  > :not([data-smb-task-check]) {
+  opacity: 0.55;
+  text-decoration: line-through;
+}

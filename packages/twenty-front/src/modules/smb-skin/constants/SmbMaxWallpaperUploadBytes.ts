@@ -1,0 +1,1 @@
+export const SMB_MAX_WALLPAPER_UPLOAD_BYTES = 50 * 1024 * 1024;

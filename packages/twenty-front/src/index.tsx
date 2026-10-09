@@ -15,6 +15,10 @@ import 'twenty-ui/theme-light.css';
 import 'twenty-ui/theme-dark.css';
 import './index.css';
 
+// P-003 (ADR-007): единственный импорт визуального слоя форка.
+// Порядок важен: идёт после тем, чтобы бренд-слой и скин их переопределяли.
+import '@/smb-skin/styles/smb-skin.css';
+
 const renderApp = () => {
   const root = ReactDOM.createRoot(
     document.getElementById('root') ?? document.body,
