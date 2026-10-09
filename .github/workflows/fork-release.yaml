@@ -1,0 +1,283 @@
+name: Fork Release
+
+# Build → GHCR → deploy staging (when secrets present) → smoke (opt-in).
+# Prod deploy only on tags v*-smb.* via environment: production (required reviewers).
+
+on:
+  workflow_run:
+    workflows: ['Fork CI']
+    types: [completed]
+    branches: [main]
+  push:
+    tags:
+      - 'v*-smb.*'
+  workflow_dispatch:
+    inputs:
+      deploy_env:
+        description: 'Optional SSH deploy after build (staging|prod|none)'
+        required: true
+        default: 'none'
+        type: choice
+        options: [none, staging, prod]
+      image_tag:
+        description: 'Override tag for manual deploy (default: sha-<short>)'
+        required: false
+        default: ''
+
+concurrency:
+  group: fork-release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+  actions: read
+
+env:
+  IMAGE_NAME: ghcr.io/haiiroshizumu/new-crm
+
+jobs:
+  # Skip workflow_run when Fork CI failed or was cancelled.
+  gate:
+    name: gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    if: >
+      github.event_name == 'workflow_dispatch'
+      || github.event_name == 'push'
+      || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+    outputs:
+      should_build: ${{ steps.set.outputs.should_build }}
+      ref: ${{ steps.set.outputs.ref }}
+      sha: ${{ steps.set.outputs.sha }}
+      is_tag: ${{ steps.set.outputs.is_tag }}
+      version_tag: ${{ steps.set.outputs.version_tag }}
+    steps:
+      - name: Resolve ref
+        id: set
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "workflow_run" ]]; then
+            REF="${{ github.event.workflow_run.head_branch }}"
+            SHA="${{ github.event.workflow_run.head_sha }}"
+            IS_TAG=false
+            VERSION_TAG=""
+          elif [[ "${{ github.event_name }}" == "push" && "${{ github.ref_type }}" == "tag" ]]; then
+            REF="${{ github.ref }}"
+            SHA="${{ github.sha }}"
+            IS_TAG=true
+            VERSION_TAG="${{ github.ref_name }}"
+          else
+            REF="${{ github.ref }}"
+            SHA="${{ github.sha }}"
+            IS_TAG=false
+            VERSION_TAG=""
+          fi
+          echo "should_build=true" >> "$GITHUB_OUTPUT"
+          echo "ref=${REF}" >> "$GITHUB_OUTPUT"
+          echo "sha=${SHA}" >> "$GITHUB_OUTPUT"
+          echo "is_tag=${IS_TAG}" >> "$GITHUB_OUTPUT"
+          echo "version_tag=${VERSION_TAG}" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: build-push
+    needs: gate
+    if: needs.gate.outputs.should_build == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    outputs:
+      image_tag_sha: ${{ steps.meta.outputs.image_tag_sha }}
+      tags: ${{ steps.meta.outputs.tags }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ needs.gate.outputs.sha }}
+
+      - name: Image tags
+        id: meta
+        run: |
+          set -euo pipefail
+          SHORT_SHA="$(echo '${{ needs.gate.outputs.sha }}' | cut -c1-7)"
+          SHA_TAG="sha-${SHORT_SHA}"
+          TAGS="${{ env.IMAGE_NAME }}:${SHA_TAG}"
+          if [[ "${{ needs.gate.outputs.is_tag }}" == "true" ]]; then
+            TAGS="${TAGS},${{ env.IMAGE_NAME }}:${{ needs.gate.outputs.version_tag }}"
+          else
+            # Movable staging tag on main builds only
+            TAGS="${TAGS},${{ env.IMAGE_NAME }}:staging"
+          fi
+          echo "image_tag_sha=${SHA_TAG}" >> "$GITHUB_OUTPUT"
+          echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
+          echo "Building tags: ${TAGS}"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
+
+      - name: Login to GHCR
+        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3.5.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        id: build
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        with:
+          context: .
+          file: ./packages/twenty-docker/twenty/Dockerfile
+          target: twenty
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          build-args: |
+            APP_VERSION=${{ needs.gate.outputs.is_tag == 'true' && needs.gate.outputs.version_tag || needs.gate.outputs.sha }}
+          # Front stage uses NODE_OPTIONS in Dockerfile (8192); override via secret not available
+          # inside RUN — if OOM on 7 GiB runner, patch Dockerfile or use larger runner and record in docs/ops/deploy.md
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+
+      - name: Record build notes
+        run: |
+          echo "image_tag_sha=${{ steps.meta.outputs.image_tag_sha }}"
+          echo "digest=${{ steps.build.outputs.digest }}"
+          echo "Record wall time from Actions UI; peak RSS NOT RUN until measured."
+
+  deploy-staging:
+    name: deploy-staging
+    needs: [gate, build]
+    if: >
+      always()
+      && needs.build.result == 'success'
+      && needs.gate.outputs.is_tag != 'true'
+      && (github.event_name == 'workflow_run'
+          || (github.event_name == 'workflow_dispatch' && inputs.deploy_env == 'staging'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: staging
+    steps:
+      - name: Skip if deploy secrets missing
+        id: check
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          STAGING_HOST: ${{ secrets.STAGING_HOST }}
+        run: |
+          if [[ -z "${DEPLOY_SSH_KEY}" || -z "${STAGING_HOST}" ]]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "NOT RUN: DEPLOY_SSH_KEY / STAGING_HOST not configured (cutover pending)."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy via forced SSH command
+        if: steps.check.outputs.skip == 'false'
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          STAGING_HOST: ${{ secrets.STAGING_HOST }}
+          STAGING_USER: ${{ secrets.STAGING_USER }}
+          IMAGE_TAG: ${{ needs.build.outputs.image_tag_sha }}
+        run: |
+          set -euo pipefail
+          USER_NAME="${STAGING_USER:-deploy}"
+          mkdir -p ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/gha_deploy
+          chmod 600 ~/.ssh/gha_deploy
+          ssh -i ~/.ssh/gha_deploy \
+            -o StrictHostKeyChecking=accept-new \
+            -o IdentitiesOnly=yes \
+            "${USER_NAME}@${STAGING_HOST}" \
+            "staging ${IMAGE_TAG}"
+
+  smoke-staging:
+    name: smoke-staging
+    needs: [gate, deploy-staging, build]
+    if: >
+      always()
+      && needs.deploy-staging.result == 'success'
+      && vars.SMOKE_STAGING_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: staging
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ needs.gate.outputs.sha }}
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '24'
+
+      - name: Install Playwright + run smoke
+        env:
+          STAGING_URL: ${{ vars.STAGING_URL || 'https://dev.crm-systems-ai.ru' }}
+          STAGING_BASIC_AUTH_USER: ${{ secrets.STAGING_BASIC_AUTH_USER }}
+          STAGING_BASIC_AUTH_PASSWORD: ${{ secrets.STAGING_BASIC_AUTH_PASSWORD }}
+          SMOKE_LOGIN: ${{ secrets.SMOKE_LOGIN }}
+          SMOKE_PASSWORD: ${{ secrets.SMOKE_PASSWORD }}
+        working-directory: smb/deploy/smoke
+        run: |
+          set -euo pipefail
+          npm install
+          npx playwright install --with-deps chromium
+          npx playwright test
+
+  deploy-prod:
+    name: deploy-prod
+    needs: [gate, build]
+    if: >
+      always()
+      && needs.build.result == 'success'
+      && (
+        needs.gate.outputs.is_tag == 'true'
+        || (github.event_name == 'workflow_dispatch' && inputs.deploy_env == 'prod')
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    steps:
+      - name: Skip if deploy secrets missing
+        id: check
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          PROD_HOST: ${{ secrets.PROD_HOST }}
+        run: |
+          if [[ -z "${DEPLOY_SSH_KEY}" || -z "${PROD_HOST}" ]]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "NOT RUN: DEPLOY_SSH_KEY / PROD_HOST not configured."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Resolve tag
+        id: tag
+        run: |
+          if [[ "${{ needs.gate.outputs.is_tag }}" == "true" ]]; then
+            echo "tag=${{ needs.gate.outputs.version_tag }}" >> "$GITHUB_OUTPUT"
+          elif [[ -n "${{ inputs.image_tag }}" ]]; then
+            echo "tag=${{ inputs.image_tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${{ needs.build.outputs.image_tag_sha }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy via forced SSH command
+        if: steps.check.outputs.skip == 'false'
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          PROD_HOST: ${{ secrets.PROD_HOST }}
+          PROD_USER: ${{ secrets.PROD_USER }}
+          IMAGE_TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          set -euo pipefail
+          USER_NAME="${PROD_USER:-deploy}"
+          mkdir -p ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/gha_deploy
+          chmod 600 ~/.ssh/gha_deploy
+          ssh -i ~/.ssh/gha_deploy \
+            -o StrictHostKeyChecking=accept-new \
+            -o IdentitiesOnly=yes \
+            "${USER_NAME}@${PROD_HOST}" \
+            "prod ${IMAGE_TAG}"

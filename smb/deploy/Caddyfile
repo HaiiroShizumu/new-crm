@@ -1,0 +1,34 @@
+# Install on the VPS next to compose (e.g. /opt/crm/Caddyfile).
+# Generate staging basic-auth hash: caddy hash-password --plaintext '...'
+# Replace STAGING_BASIC_AUTH_HASH before first start.
+
+{
+	email admin@crm-systems-ai.ru
+}
+
+# Staging — closed with basic auth until clients need open access
+dev.crm-systems-ai.ru {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+	}
+
+	basicauth {
+		# user "staging" — replace hash after: caddy hash-password
+		staging STAGING_BASIC_AUTH_HASH
+	}
+
+	reverse_proxy 127.0.0.1:3001
+}
+
+# Production
+app.crm-systems-ai.ru {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+	}
+
+	reverse_proxy 127.0.0.1:3000
+}

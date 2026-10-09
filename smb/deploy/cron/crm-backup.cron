@@ -1,0 +1,12 @@
+# Install as deploy user: crontab -e
+# Requires: rclone configured when RCLONE_REMOTE is set; HEALTHCHECKS_URL optional.
+
+CRM_ROOT=/opt/crm
+RCLONE_REMOTE=
+HEALTHCHECKS_URL=
+
+# Daily prod backup at 02:15 UTC
+15 2 * * * RCLONE_REMOTE= HEALTHCHECKS_URL= /opt/crm/bin/backup-daily.sh prod >>/opt/crm/logs/backup-prod.log 2>&1
+
+# Optional staging backup at 03:15 UTC
+# 15 3 * * * /opt/crm/bin/backup-daily.sh staging >>/opt/crm/logs/backup-staging.log 2>&1

@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+# Fast pre-commit for the fork: core-patch registry + oxlint on staged TS only.
+# Budget ≤15s; heavy checks stay in CI (fork-ci.yaml).
+# Portable for macOS /bin/bash 3.2 (no mapfile).
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT"
+
+echo "pre-commit: check-core-patches --staged…"
+if ! bash scripts/check-core-patches.sh --staged; then
+  echo ""
+  echo "pre-commit: правки ядра без записи в docs/PATCHES.md."
+  echo "  Добавь строку P-00N в docs/PATCHES.md (см. вывод выше), затем git add docs/PATCHES.md."
+  exit 1
+fi
+
+STAGED_TS="$(
+  git diff --cached --name-only --diff-filter=ACMR \
+    | grep -E '\.(ts|tsx)$' \
+    | grep -vE '(^|/)locales/generated/' \
+    || true
+)"
+
+if [ -z "$STAGED_TS" ]; then
+  echo "pre-commit: нет staged .ts/.tsx — lint пропущен"
+  exit 0
+fi
+
+if ! command -v npx >/dev/null 2>&1; then
+  echo "pre-commit: npx нет — lint пропущен (полный lint в CI)"
+  exit 0
+fi
+
+COUNT="$(echo "$STAGED_TS" | grep -c . || true)"
+OXLINT_CFG=""
+case "$(echo "$STAGED_TS" | head -1)" in
+  packages/twenty-server/*)
+    [ -f packages/twenty-server/.oxlintrc.json ] && OXLINT_CFG=packages/twenty-server/.oxlintrc.json
+    ;;
+  packages/twenty-front/*)
+    [ -f packages/twenty-front/.oxlintrc.json ] && OXLINT_CFG=packages/twenty-front/.oxlintrc.json
+    ;;
+esac
+
+echo "pre-commit: oxlint ($COUNT file(s), timeout 15s)…"
+
+# Build argv without relying on mapfile / bash 4
+set --
+while IFS= read -r f; do
+  [ -n "$f" ] || continue
+  set -- "$@" "$f"
+done <<EOF
+$STAGED_TS
+EOF
+
+run_with_timeout() {
+  # $@ = oxlint args after binary
+  if command -v timeout >/dev/null 2>&1; then
+    timeout 15 "$@"
+    return $?
+  fi
+  if command -v gtimeout >/dev/null 2>&1; then
+    gtimeout 15 "$@"
+    return $?
+  fi
+  # macOS without coreutils: background + kill
+  "$@" &
+  pid=$!
+  (
+    sleep 15
+    kill "$pid" 2>/dev/null
+  ) &
+  watcher=$!
+  set +e
+  wait "$pid"
+  rc=$?
+  set -e
+  kill "$watcher" 2>/dev/null || true
+  wait "$watcher" 2>/dev/null || true
+  return "$rc"
+}
+
+set +e
+if [ -n "$OXLINT_CFG" ]; then
+  run_with_timeout npx --no-install oxlint -c "$OXLINT_CFG" "$@"
+else
+  run_with_timeout npx --no-install oxlint "$@"
+fi
+rc=$?
+set -e
+
+# 124 = GNU timeout; 137/143 = SIGKILL/SIGTERM from our watcher
+if [ "$rc" -eq 124 ] || [ "$rc" -eq 137 ] || [ "$rc" -eq 143 ]; then
+  echo "pre-commit: oxlint превысил 15с — пропуск. Полный lint в CI (fork-ci)."
+  exit 0
+fi
+
+if [ "$rc" -ne 0 ]; then
+  echo "pre-commit: oxlint нашёл проблемы (exit $rc)."
+  echo "  Исправь замечания. Type-aware / полный lint — в CI."
+  exit "$rc"
+fi
+
+echo "pre-commit: OK"
+exit 0

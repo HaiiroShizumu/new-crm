@@ -1,0 +1,34 @@
+# Dev-only overrides. Connect as second -f; do not edit docker-compose.dev.yml.
+# Requires Docker Compose ≥ 2.24 (!override for ports/command).
+#
+#   docker compose -p twenty-dev \
+#     -f packages/twenty-docker/docker-compose.dev.yml \
+#     -f smb/dev/compose.override.yml \
+#     up -d --wait
+
+services:
+  db:
+    ports: !override
+      - "5433:5432"
+    # fsync/synchronous_commit/full_page_writes off — ONLY local dev durability tradeoff
+    command: >
+      postgres
+      -c shared_buffers=256MB
+      -c max_connections=100
+      -c fsync=off
+      -c synchronous_commit=off
+      -c full_page_writes=off
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
+  redis:
+    ports: !override
+      - "6380:6379"
+    command: !override
+      - redis-server
+      - --maxmemory
+      - 128mb
+      - --maxmemory-policy
+      - allkeys-lru
