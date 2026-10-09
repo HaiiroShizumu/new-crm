@@ -3,3 +3,13 @@
 **/node_modules
 .nx/cache
 packages/twenty-server/.env
+
+# Не нужно в контексте сборки образа (форк): ECC — 242M исходники инструмента,
+# адаптеры IDE и доки не участвуют в COPY Dockerfile, но раздувают контекст.
+ECC
+.cursor
+.claude
+.ecc
+docs
+smb
+*.log

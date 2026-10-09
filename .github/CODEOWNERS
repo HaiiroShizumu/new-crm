@@ -7,3 +7,18 @@
 /.claude/              @charlesBochet @FelixMalfait @Weiko @prastoin @bosiraphael @etiennejouan @ijreilly @martmull @thomtrp
 /.mcp.json             @charlesBochet @FelixMalfait @Weiko @prastoin @bosiraphael @etiennejouan @ijreilly @martmull @thomtrp
 /CLAUDE.md             @charlesBochet @FelixMalfait @Weiko @prastoin @bosiraphael @etiennejouan @ijreilly @martmull @thomtrp
+
+# === ВЛАДЕЛЕЦ ФОРКА (правила идут после upstream-блоков, т.к. в CODEOWNERS
+# применяется ПОСЛЕДНЕЕ совпадение) ===
+
+# Реестр правок ядра и его CI-гейт
+/docs/PATCHES.md                    @HaiiroShizumu
+/docs/adr/                          @HaiiroShizumu
+/docs/arch/                         @HaiiroShizumu
+/scripts/check-core-patches.sh      @HaiiroShizumu
+/scripts/verify-citations.sh        @HaiiroShizumu
+
+# CI/CD форка — перекрывает upstream-блок выше (иначе ревьюеры из команды Twenty,
+# которых в форке нет, и PR заблокируется)
+/.github/workflows/                 @HaiiroShizumu
+/.github/CODEOWNERS                 @HaiiroShizumu
