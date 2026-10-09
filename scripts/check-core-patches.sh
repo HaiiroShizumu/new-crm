@@ -29,8 +29,11 @@ done
 # если задача не про переводы.
 OURS='^(packages/smb-|apps/|docs/|scripts/|smb/|\.github/|\.gitlab-ci|\.claude/|\.cursor/)|(^|/)locales/.*\.po$|(^|/)locales/generated/'
 
+# core.quotepath=false: иначе git оборачивает пути с не-ASCII (кириллица в
+# docs/bitrix-audit/, docs/tooling/) в двойные кавычки, '^docs/' не матчится,
+# и check-core-patches падает на собственных доках форка.
 if [ "$STAGED" = true ]; then
-  changed=$(git diff --cached --name-only --diff-filter=ACMR | grep -Ev "$OURS" | grep -v '^$' | sort -u || true)
+    changed=$(git -c core.quotepath=false diff --cached --name-only --diff-filter=ACMR | grep -Ev "$OURS" | grep -v '^$' | sort -u || true)
   DIFF_DESC="staged"
 else
   if ! git rev-parse --verify --quiet "$BASE" >/dev/null; then
@@ -41,7 +44,7 @@ else
       exit 2
     fi
   fi
-  changed=$(git diff --name-only "$BASE"...HEAD | grep -Ev "$OURS" | grep -v '^$' | sort -u || true)
+  changed=$(git -c core.quotepath=false diff --name-only "$BASE"...HEAD | grep -Ev "$OURS" | grep -v '^$' | sort -u || true)
   DIFF_DESC="diff $BASE...HEAD"
 fi
 
