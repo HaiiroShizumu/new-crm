@@ -10,7 +10,10 @@ CI (`check-core-patches`, `.github/workflows/fork-ci.yaml`) падает, MR в 
 - Всё остальное (ядро Twenty) — строка в таблице ниже, обязательна.
 - Правка ядра больше одной строки — дополнительно ADR: `docs/adr/ADR-NNN-<тема>.md`
   (каталог ADR — `docs/adr/`, см. `docs/adr/README.md`; исторические решения — `docs/arch/NN-<тема>.md`).
-- `ID` — последовательный: `P-001`, `P-002`, …; старые ID не переиспользовать.
+- `ID` — последовательный; старые ID не переиспользовать.
+  **`P-002` и `P-003` зарезервированы за швами ADR-007** (серверный импорт `SmbServerModule`,
+  точка входа фронта `SmbFrontEntry`) — свободными не являются и служебные записи не занимают.
+  Служебные правки (CODEOWNERS, `.gitignore`, `.dockerignore`) получили `P-010`…`P-012`.
 - `Файл` — точный путь от корня репозитория; можно указать каталог с `/` на конце
   или glob (`packages/twenty-front/src/**/Foo.tsx`) — проверка матчит по glob.
 - Исключения: `locales/*.po` и `locales/generated/*` — перегенериваются i18n-пайплайном
@@ -25,6 +28,8 @@ CI (`check-core-patches`, `.github/workflows/fork-ci.yaml`) падает, MR в 
 | ID | Файл | Что изменено | Зачем | Можно в upstream? | Риск конфликта |
 | --- | --- | --- | --- | --- | --- |
 | P-001 | CLAUDE.md | добавлен раздел «Форк» (5 правил для агентов) | контроль правок ядра форка; ADR: `docs/arch/01-fork-agent-rules.md` | нет | высокий |
-| P-004 | .dockerignore | добавлены `ECC`, `.cursor`, `.claude`, `.ecc`, `docs`, `smb`, `*.log` в ignore-список | эти каталоги не участвуют в `COPY` Dockerfile, но 242M ECC раздувают контекст сборки → замедление каждой сборки; задача A5 (R02) | нет | низкий |
-| P-003 | .gitignore | добавлено `docs/tooling/*.log` (и комментарий) перед правилом `mcp.json` | логи тулинга форка не должны попадать в git; задача A6 (R02) | нет | низкий |
-| P-002 | .github/CODEOWNERS | в конец добавлены правила владельца форка (`@HaiiroShizumu`) на `docs/PATCHES.md`, `docs/adr/`, `docs/arch/`, `scripts/check-core-patches.sh`, `scripts/verify-citations.sh`, `.github/workflows/`; upstream-блок с командой Twenty сохранён | включить «Require review from Code Owners» по нашим путям; без этого PR в main мог бы пройти мимо владельца. Задача A3 (R02) | нет | низкий (дописывание в конец, не перезапись) |
+| P-012 | .dockerignore | добавлены `ECC`, `.cursor`, `.claude`, `.ecc`, `docs`, `smb`, `*.log` в ignore-список | эти каталоги не участвуют в `COPY` Dockerfile, но 242M ECC раздувают контекст сборки → замедление каждой сборки; задача A5 (R02) | нет | низкий |
+| P-011 | .gitignore | добавлено `docs/tooling/*.log` (и комментарий) перед правилом `mcp.json` | логи тулинга форка не должны попадать в git; задача A6 (R02) | нет | низкий |
+| P-002 |  | **зарезервировано за швом ADR-007** — импорт `SmbServerModule` в ядро сервера | шов появится на Этапе 1 (`docs/adr/ADR-007-unified-stitch.md`); свободным не является | нет | средний |
+| P-003 |  | **зарезервировано за швом ADR-007** — монтирование `SmbFrontEntry` в ядро фронта | шов появится на Этапе 1 (`docs/adr/ADR-007-unified-stitch.md`); свободным не является | нет | средний |
+| P-010 | .github/CODEOWNERS | в конец добавлены правила владельца форка (`@HaiiroShizumu`) на `docs/PATCHES.md`, `docs/adr/`, `docs/arch/`, `scripts/check-core-patches.sh`, `scripts/verify-citations.sh`, `.github/workflows/`; upstream-блок с командой Twenty сохранён | включить «Require review from Code Owners» по нашим путям; без этого PR в main мог бы пройти мимо владельца. Задача A3 (R02) | нет | низкий (дописывание в конец, не перезапись) |

@@ -24,56 +24,65 @@ for arg in "$@"; do
   esac
 done
 
-# Наши каталоги (новый код форка) + исключения i18n:
-# *.po и locales/generated/* перегенерируются пайплайном и не коммитятся,
-# если задача не про переводы.
+# Путь требует записи в docs/PATCHES.md, если (статус != A) ИЛИ (статус == A
+# и путь вне OURS). Статус-зависимое правило закрывает и широкие '^\.github/',
+# и '^\.claude/': правка upstream-файла ловится по статусу M/D независимо от
+# каталога, а добавляемый нами новый код — по A + OURS.
 #
-# .claude/.cursor перечислены ЯВНЫМИ подкаталогами: на twenty/v2.45.6 внутри
-# .claude живут 8 upstream-файлов (settings.json + 7 skills). Широкий '^\.claude/'
-# пропускал бы их правку мимо реестра (дыра A2).
-OURS='^(packages/smb-|apps/|docs/|scripts/|smb/|\.github/|\.gitlab-ci|\.cursor/|\.claude/(\.agents|\.pi|agents|commands|rules|scripts|ecc|mcp-configs|skills)|\.claude/(AGENTS\.md|README\.md|PLUGIN_SCHEMA_NOTES\.md|marketplace\.json|plugin\.json))|(^|/)locales/.*\.po$|(^|/)locales/generated/'
-
-# Upstream-файлы, лежащие ВНУТРИ наших каталогов: считать ядром, правка любого
-# требует строки в docs/PATCHES.md — как и правка файлов вне OURS.
-CORE_IN_OURS='^\.claude/(settings\.json|skills/(qa-scout|syncable-entity-))'
+# OURS = только наш новодобавленный код:
+#   packages/smb-*, apps/, docs/, scripts/, smb/, .claude/, .cursor/,
+#   .github/workflows/fork-*  — но НЕ весь '.github/' (upstream CI мы правим).
+# i18n отдельно: *.po и locales/generated/* перегенерируются пайплайном и не
+# коммитятся (docs/PATCHES.md) — для них запись в реестр не предусмотрена,
+# иначе гейт упирался бы в правило, которого нельзя придержаться.
+OURS='(^|/)locales/(generated/|.*\.po$)|^(packages/smb-|apps/|docs/|scripts/|smb/|\.claude/|\.cursor/|\.github/workflows/fork-)'
 
 # core.quotepath=false: иначе git оборачивает пути с не-ASCII (кириллица в
 # docs/bitrix-audit/, docs/tooling/) в двойные кавычки, '^docs/' не матчится,
 # и check-core-patches падает на собственных доках форка.
-# Оба источника путей (staged / diff с базой) читаются одной функцией.
-git_names() {
-  if [ "$STAGED" = true ]; then
-    git -c core.quotepath=false diff --cached --name-only --diff-filter=ACMR
+#
+# Оба режима сравниваются ОТ БАЗЫ — иначе статусы расходятся с правилом:
+#   * diff BASE..HEAD      — база -> HEAD;
+#   * --cached  (pre-commit)— база -> ИНДЕКС (а не HEAD -> индекс, иначе любой
+#     наш уже закоммиченный файл читается как M и ложно требует записи).
+# --no-renames: переименование читается как D+A и не прячет правку ядра.
+if ! git rev-parse --verify --quiet "$BASE" >/dev/null; then
+  if git rev-parse --verify --quiet "origin/$BASE" >/dev/null; then
+    BASE="origin/$BASE"
   else
-    git -c core.quotepath=false diff --name-only "$BASE"...HEAD
+    echo "check-core-patches: не найден базовый реф '$BASE' (настройка UPSTREAM_BASE_REF)" >&2
+    exit 2
+  fi
+fi
+
+git_pairs() {
+  if [ "$STAGED" = true ]; then
+    git -c core.quotepath=false diff --cached --name-status --no-renames "$BASE"
+  else
+    git -c core.quotepath=false diff --name-status --no-renames "$BASE" HEAD
   fi
 }
 
 if [ "$STAGED" = true ]; then
-  DIFF_DESC="staged"
+  DIFF_DESC="staged (base=$BASE -> index)"
 else
-  if ! git rev-parse --verify --quiet "$BASE" >/dev/null; then
-    if git rev-parse --verify --quiet "origin/$BASE" >/dev/null; then
-      BASE="origin/$BASE"
-    else
-      echo "check-core-patches: не найден базовый реф '$BASE' (настройка UPSTREAM_BASE_REF)" >&2
-      exit 2
-    fi
-  fi
   DIFF_DESC="diff $BASE...HEAD"
 fi
 
 [ -f "$REGISTRY" ] || { echo "check-core-patches: нет реестра $REGISTRY" >&2; exit 2; }
 
-# Пути вне наших каталогов + upstream-файлы внутри наших каталогов (CORE_IN_OURS).
-# Обе выборки делаются от общего списка, затем склейка и дедупликация.
-# || true обязателен: при пустой выборке grep возвращает 1, а set -e + pipefail
-# убивали скрипт ДО echo — режим --staged молча завершался с exit 1 без вывода.
+# Требуют записи: всё, кроме (A + путь в OURS).
+# || true в конце обязателен: при пустой выборке grep/sort возвращают 1, а
+# set -e + pipefail убивали скрипт ДО echo — режим --staged молча завершался
+# с exit 1 без вывода.
 changed=$(
-  {
-    git_names | grep -Ev "$OURS" || true
-    git_names | grep -E "$CORE_IN_OURS" || true
-  } | { grep -v '^$' || true; } | sort -u || true
+  git_pairs | {
+    while IFS="$(printf '\t')" read -r st path; do
+      [ -z "${path:-}" ] && continue
+      if [ "$st" = "A" ] && [[ "$path" =~ $OURS ]]; then continue; fi
+      printf '%s\n' "$path"
+    done || true
+  } | sort -u || true
 )
 
 if [ -z "$changed" ]; then
