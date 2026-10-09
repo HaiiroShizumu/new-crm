@@ -27,7 +27,7 @@ done
 # Наши каталоги (новый код форка) + исключения i18n:
 # *.po и locales/generated/* перегенерируются пайплайном и не коммитятся,
 # если задача не про переводы.
-OURS='^(packages/smb-|apps/|docs/|scripts/|smb/|\.github/|\.gitlab-ci)|(^|/)locales/.*\.po$|(^|/)locales/generated/'
+OURS='^(packages/smb-|apps/|docs/|scripts/|smb/|\.github/|\.gitlab-ci|\.claude/|\.cursor/)|(^|/)locales/.*\.po$|(^|/)locales/generated/'
 
 if [ "$STAGED" = true ]; then
   changed=$(git diff --cached --name-only --diff-filter=ACMR | grep -Ev "$OURS" | grep -v '^$' | sort -u || true)
