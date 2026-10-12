@@ -5,6 +5,8 @@
 **Основание:** `docs/arch/00-baseline-analysis.md` §4 (сообщения, notes, уведомления), §1d (SSE)
 **Связанные:** [ADR-001](ADR-001-module-mechanism.md) (механизм модуля), [ADR-003](ADR-003-business-processes.md) (чат как часть процесса)
 
+> **Поправка 2026-10-12:** модель хранения и прав из этого ADR (сообщения как объекты workspace) и мост Mattermost **отменены** — см. [ADR-010](ADR-010-communications.md). Этот текст — история решения.
+
 ---
 
 ## Контекст

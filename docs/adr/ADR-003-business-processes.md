@@ -5,6 +5,8 @@
 **Основание:** `docs/arch/00-baseline-analysis.md` §3
 **Связанные:** [ADR-001](ADR-001-module-mechanism.md) (пресеты процессов как App), [ADR-004](ADR-004-required-fields-rules.md) (обязательность на шагах), [ADR-002](ADR-002-record-conversations.md) (уведомления)
 
+> **Поправка 2026-10-12:** «человеческий шаг» и способ пробуждения уточнены в [ADR-011](ADR-011-tasks-forms-processes.md) п.1 и п.4 — при расхождении действует ADR-011.
+
 ---
 
 ## Контекст
