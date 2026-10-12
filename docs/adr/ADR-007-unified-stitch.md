@@ -1,7 +1,7 @@
 # ADR-007: Единый шов (smb-server / smb-front)
 
 **Статус:** Предложено (утверждение за владельцем)
-**Правка 2026-10-12:** прототип Discovery (п.«Риск») прогнан, место P-002 подтверждено — `docs/reports/S-A2.md`; серверная половина размещения закрыта на **M2** (решение владельца, TODO M-1).
+**Правка 2026-10-12 (вторая):** по итогам ревизии место P-002 перенесено из `modules.module.ts` в `engine/core-modules/core-engine.module.ts` — только это дерево грузят сервер, воркер и CLI, и по нему собирается схема `/graphql` ([ADR-013](ADR-013-fork-server-foundation.md) п.1, `docs/reports/R07.md`). Число швов не изменилось. Прежняя правка: прототип Discovery (п.«Риск») прогнан, место P-002 подтверждено — `docs/reports/S-A2.md`; серверная половина размещения закрыта на **M2** (решение владельца, TODO M-1).
 **Дата:** 2026-10-09
 **Основание:** `docs/arch/00-baseline-analysis.md` §1c, §1e, §1f; верификация на базе `twenty/v2.45.6` (`docs/arch/02-verification-at-base.md`); правило форка в `docs/PATCHES.md`
 **Связанные:** [ADR-001](ADR-001-module-mechanism.md) (гибрид Apps + швы), [ADR-002](ADR-002-record-conversations.md) (права в шве), [ADR-003](ADR-003-business-processes.md) (хуки задач), [ADR-005](ADR-005-visual-layer.md) (brand.css)
@@ -63,6 +63,8 @@ packages/smb-server/
 ```
 
 В ядре (запись **P-002**): ровно один импорт `SmbServerModule` — в файл, который уже входит в дерево приложения. Кандидаты на базе:
+
+**Итог 2026-10-12:** выбран третий вариант — `engine/core-modules/core-engine.module.ts` (ADR-013 п.1); кандидаты A/B ниже оставлены как хронология прототипа.
 
 1. `packages/twenty-server/src/modules/modules.module.ts` — общий шов доменных модулей;
 2. `packages/twenty-server/src/engine/api/graphql/workspace-query-runner/workspace-query-hook/workspace-query-hook.module.ts` — если Discovery хуков требует соседства с `WorkspaceQueryHookExplorer` (проверить прототипом ниже).
@@ -126,7 +128,7 @@ ui-preferences, форковые navigation), в перенос не вошли.
 
 | ID | Файл | Что изменено | Статус |
 |---|---|---|---|
-| **P-002** | `packages/twenty-server/src/modules/modules.module.ts` (кандидат A) | импорт `SmbServerModule` + строка в `imports` — **2 строки** | **реализован 2026-10-12**: место подтверждено прогоном прототипа (`docs/reports/S-A2.md`), M1/M2 — M2 |
+| **P-002** | `packages/twenty-server/src/engine/core-modules/core-engine.module.ts` | импорт `SmbServerModule` + строка в `imports` — **2 строки** | **реализован 2026-10-12**: прототип подтвердил кандидата A (`modules.module.ts`, `docs/reports/S-A2.md`), затем по ADR-013 п.1 перенесён в `CoreEngineModule` (дерево сервера/воркера/CLI и схемы `/graphql`), повторный прогон A2 — хук срабатывает; M1/M2 — M2 |
 | **P-003** | `packages/twenty-front/src/index.tsx` | импорт `@/smb-skin/styles/smb-skin.css` (одна строка) | **реализован** |
 | **P-013** | `modules/app/components/SharedAppProviders.tsx` | импорт + монтирование `<SmbSkinEntry />` | **реализован** (второй шов фронта, допущен владельцем) |
 

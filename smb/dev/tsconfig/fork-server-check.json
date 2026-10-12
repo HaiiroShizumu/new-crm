@@ -1,0 +1,18 @@
+{
+  "//": "Точечная проверка типов серверного кода форка. Полный `tsc -p packages/twenty-server/tsconfig.json` (11 381 файл, 94 МБ src) в контейнере 6 ГБ не помещается — OOM на 4,3 ГБ heap (см. docs/reports/R06.md). Конфиг лежит в OURS (smb/) и наследует компиляторные опции ядра, но проверяет только файлы наших модулей вместе со всем достижимым графом импортов.",
+  "extends": "../../../packages/twenty-server/tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "incremental": false
+  },
+  "include": [
+    "../../../packages/twenty-server/src/modules/smb-core/**/*.ts",
+    "../../../packages/twenty-server/src/modules/smb-database/**/*.ts",
+    "../../../packages/twenty-server/src/modules/smb-modules/**/*.ts",
+    "../../../packages/twenty-server/src/modules/smb-notifications/**/*.ts",
+    "../../../packages/twenty-server/src/modules/smb-server.module.ts",
+    "../../../packages/twenty-server/src/engine/core-modules/health/controllers/health.controller.ts",
+    "../../../packages/twenty-server/src/engine/core-modules/auth/services/sign-in-up.service.ts"
+  ],
+  "exclude": ["**/node_modules", "**/dist"]
+}

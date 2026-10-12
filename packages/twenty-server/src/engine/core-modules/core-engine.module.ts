@@ -85,6 +85,7 @@ import { CallRecordingModule } from 'src/modules/call-recording/call-recording.m
 import { DashboardModule } from 'src/modules/dashboard/dashboard.module';
 import { AiToolCallAnswerModule } from 'src/engine/metadata-modules/ai/ai-tool-call-answer/ai-tool-call-answer.module';
 import { SendEmailModule } from 'src/modules/messaging/message-outbound-manager/send-email.module';
+import { SmbServerModule } from 'src/modules/smb-server.module';
 import { ClientConfigModule } from './client-config/client-config.module';
 import { EventLogsViewerModule } from './event-logs/event-logs-viewer.module';
 import { FileApiModule } from './file/file-api.module';
@@ -186,6 +187,8 @@ import { FileApiModule } from './file/file-api.module';
     EventLogsViewerModule,
     PreInstalledAppsModule,
     AppBillingModule,
+    // P-002: единственный серверный шов форка (ADR-013 п.1)
+    SmbServerModule,
   ],
   providers: [
     {
