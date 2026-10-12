@@ -1,13 +1,13 @@
 import { type RecordGroupDefinition } from '@/object-record/record-group/types/RecordGroupDefinition';
 import { styled } from '@linaria/react';
-import { useContext, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { IconCircleDot } from 'twenty-ui/icon';
-import { type ThemeColor } from 'twenty-ui/theme';
 import {
-  ThemeContext,
+  type ThemeColor,
   themeCssVariables,
-  type Theme,
-} from 'twenty-ui/theme-constants';
+  useTheme,
+  type ThemeType as Theme,
+} from 'twenty-ui/theme';
 
 type SmbRecordBoardColumnTitleProps = {
   recordGroupDefinition: RecordGroupDefinition;
@@ -97,7 +97,7 @@ export const SmbRecordBoardColumnHeaderCard = ({
   color,
   children,
 }: SmbRecordBoardColumnHeaderCardProps) => {
-  const { theme } = useContext(ThemeContext);
+  const theme = useTheme();
 
   return (
     <StyledCard
@@ -118,7 +118,7 @@ export const SmbRecordBoardColumnTitle = ({
   recordGroupDefinition,
   recordCount,
 }: SmbRecordBoardColumnTitleProps) => {
-  const { theme } = useContext(ThemeContext);
+  const theme = useTheme();
   const iconColor = getStageIconColor({
     color: recordGroupDefinition.color,
     theme,

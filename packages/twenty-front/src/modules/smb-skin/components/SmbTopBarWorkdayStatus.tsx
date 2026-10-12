@@ -7,7 +7,7 @@ import {
   IconPlayerStop,
 } from 'twenty-ui/icon';
 import { ListItem } from 'twenty-ui/primitives/navigation';
-import { themeCssVariables } from 'twenty-ui/theme-constants';
+import { themeCssVariables } from 'twenty-ui/theme';
 
 import { smbWorkdayStatusState } from '@/smb-skin/states/smbWorkdayStatusState';
 import { type SmbWorkdayStatus } from '@/smb-skin/types/SmbWorkdayStatus';

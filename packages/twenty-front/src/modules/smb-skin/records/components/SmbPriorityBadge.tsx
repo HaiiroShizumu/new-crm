@@ -1,6 +1,5 @@
 import { styled } from '@linaria/react';
-import { type ThemeColor } from 'twenty-ui/theme';
-import { themeCssVariables } from 'twenty-ui/theme-constants';
+import { type ThemeColor, themeCssVariables } from 'twenty-ui/theme';
 
 const StyledPriorityBadge = styled.span`
   align-items: center;

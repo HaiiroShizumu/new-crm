@@ -1,6 +1,6 @@
 import { styled } from '@linaria/react';
 import Skeleton from 'react-loading-skeleton';
-import { themeCssVariables } from 'twenty-ui/theme-constants';
+import { themeCssVariables } from 'twenty-ui/theme';
 
 import { SmbSkeletonTheme } from '@/smb-skin/components/SmbSkeletonTheme';
 import { NAVIGATION_DRAWER_COLLAPSED_WIDTH } from '@/ui/layout/resizable-panel/constants/NavigationDrawerCollapsedWidth';
