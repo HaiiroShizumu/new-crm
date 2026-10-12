@@ -1,0 +1,15 @@
+import { useIsSettingsPage } from '@/smb-shell/navigation/hooks/useIsSettingsPage';
+import { currentMobileNavigationDrawerState } from '@/smb-shell/navigation/states/currentMobileNavigationDrawerState';
+import { useAtomStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomStateValue';
+import { useIsMobile } from 'twenty-ui/utilities';
+
+export const useIsSettingsDrawer = () => {
+  const isMobile = useIsMobile();
+  const isSettingsPage = useIsSettingsPage();
+  const currentMobileNavigationDrawer = useAtomStateValue(
+    currentMobileNavigationDrawerState,
+  );
+  return (
+    isSettingsPage || (isMobile && currentMobileNavigationDrawer === 'settings')
+  );
+};
