@@ -10,6 +10,7 @@ import {
 } from '@/app/components/SettingsRoutes';
 import { type WorkspaceRouteObject } from '@/app/routing/types/WorkspaceRouteObject';
 import { RecordIndexSkeletonLoader } from '@/object-record/record-index/components/RecordIndexSkeletonLoader';
+import { createSmbModuleRouteObjects } from '@/smb-modules/createSmbModuleRouteObjects';
 
 const WorkflowCoreShowPage = lazy(() =>
   import('~/pages/object-core/WorkflowCoreShowPage').then((module) => ({
@@ -68,6 +69,8 @@ export const createWorkspaceRouteObjects = ({
   });
 
   return [
+    // P-014 (ADR-009 п.4): маршруты модулей форка из smb-modules/registry.ts.
+    ...createSmbModuleRouteObjects(),
     {
       path: AppPath.WorkflowCoreShowPage,
       element: (
