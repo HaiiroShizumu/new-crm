@@ -1,6 +1,7 @@
 # ADR-007: Единый шов (smb-server / smb-front)
 
 **Статус:** Предложено (утверждение за владельцем)
+**Правка 2026-10-12:** прототип Discovery (п.«Риск») прогнан, место P-002 подтверждено — `docs/reports/S-A2.md`; серверная половина размещения закрыта на **M2** (решение владельца, TODO M-1).
 **Дата:** 2026-10-09
 **Основание:** `docs/arch/00-baseline-analysis.md` §1c, §1e, §1f; верификация на базе `twenty/v2.45.6` (`docs/arch/02-verification-at-base.md`); правило форка в `docs/PATCHES.md`
 **Связанные:** [ADR-001](ADR-001-module-mechanism.md) (гибрид Apps + швы), [ADR-002](ADR-002-record-conversations.md) (права в шве), [ADR-003](ADR-003-business-processes.md) (хуки задач), [ADR-005](ADR-005-visual-layer.md) (brand.css)
@@ -125,7 +126,7 @@ ui-preferences, форковые navigation), в перенос не вошли.
 
 | ID | Файл | Что изменено | Статус |
 |---|---|---|---|
-| **P-002** | `packages/twenty-server/src/modules/modules.module.ts` (или выбранный hook-module) | импорт `SmbServerModule` | **открыт** — до A2 п.2.1 (выбор M1/M2 для сервера) и прототипа Discovery |
+| **P-002** | `packages/twenty-server/src/modules/modules.module.ts` (кандидат A) | импорт `SmbServerModule` + строка в `imports` — **2 строки** | **реализован 2026-10-12**: место подтверждено прогоном прототипа (`docs/reports/S-A2.md`), M1/M2 — M2 |
 | **P-003** | `packages/twenty-front/src/index.tsx` | импорт `@/smb-skin/styles/smb-skin.css` (одна строка) | **реализован** |
 | **P-013** | `modules/app/components/SharedAppProviders.tsx` | импорт + монтирование `<SmbSkinEntry />` | **реализован** (второй шов фронта, допущен владельцем) |
 
@@ -146,7 +147,7 @@ ui-preferences, форковые navigation), в перенос не вошли.
 3. `updateOne` task через GraphQL — в логе сервера должна появиться строка stub.
 4. Если Discovery **не** видит хук — перенести шов в `workspace-query-hook.module.ts` (кандидат B) и повторить; зафиксировать рабочий вариант в P-002.
 
-Статус прогона: **NOT RUN** (код продукта в этой задаче не менялся; живой stub не поднимался).
+Статус прогона: **ПРОГОНАН 2026-10-12** — отчёт `docs/reports/S-A2.md`. Кандидат A подтверждён: `WorkspaceQueryHookExplorer` видит провайдер из `packages/twenty-server/src/modules/smb-core/`, в логе сервера `LOG [SmbTaskUpdateOnePreHook] smb stub: task.updateOne workspace=20202020-1c25-4d02-bf25-6aeccf7ea419`. Кандидат B не понадобился; замер M1/M2 → **M2** (правок ядра 4 → 1).
 
 ## Что нужно проверить прототипом
 
