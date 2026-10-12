@@ -78,7 +78,7 @@ export const SMB_ABSENCES_MODULE = {
 | P-002 | `packages/twenty-server/src/modules/modules.module.ts` | импорт `SmbServerModule`, который собирает `server/` всех модулей | **реализован 2026-10-12** (место подтверждено прогоном S-A2; сам корень лежит в `modules/smb-server.module.ts`) |
 | P-003, P-013 | `index.tsx`, `SharedAppProviders.tsx` | скин | реализованы |
 | P-014 | `createWorkspaceRouteObjects.tsx` (churn 7 за 6 мес.) | 3 строки: импорт, комментарий и spread маршрутов из реестра модулей | реализовано (M-3) |
-| P-015 (резерв) | точка сборки оболочки (layout) | одна строка: наша оболочка вместо штатной | новый, см. п.5 |
+| P-015 | `packages/twenty-front/src/modules/app/hooks/useCreateWorkspaceAppRouter.tsx` | импорт + `element: <SmbShellLayout />` вместо `DefaultLayout` — **2 строки** (обещана была одна, как у P-014 — расхождение записано в R06) | **реализован 2026-10-12 (U-2)**: оболочка форка вместо штатной |
 
 Новый модуль **не добавляет швов**: он регистрируется в двух наших файлах — `smb-modules/registry.ts` (фронт) и `smb-server.module.ts` (сервер). Если модулю нужен новый шов — это отдельный ADR, а не правка «по месту».
 

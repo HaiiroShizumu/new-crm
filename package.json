@@ -69,6 +69,7 @@
     "docs:prune-orphans": "tsx packages/twenty-docs/scripts/prune-orphan-translations.ts",
     "docs:fix-links": "tsx packages/twenty-docs/scripts/fix-translated-links.ts",
     "smb:module": "node scripts/smb-module.mjs",
+    "smb:preset": "node scripts/smb-preset.mjs",
     "start": "npx concurrently --kill-others 'npx nx run-many -t start -p twenty-server twenty-front' 'npx wait-on tcp:3000 && npx nx run twenty-server:worker'"
   },
   "workspaces": {
