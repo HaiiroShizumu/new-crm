@@ -33,26 +33,37 @@ if ! command -v npx >/dev/null 2>&1; then
 fi
 
 COUNT="$(echo "$STAGED_TS" | grep -c . || true)"
-OXLINT_CFG=""
-case "$(echo "$STAGED_TS" | head -1)" in
-  packages/twenty-server/*)
-    [ -f packages/twenty-server/.oxlintrc.json ] && OXLINT_CFG=packages/twenty-server/.oxlintrc.json
-    ;;
-  packages/twenty-front/*)
-    [ -f packages/twenty-front/.oxlintrc.json ] && OXLINT_CFG=packages/twenty-front/.oxlintrc.json
-    ;;
-esac
 
-echo "pre-commit: oxlint ($COUNT file(s), timeout 15s)…"
-
-# Build argv without relying on mapfile / bash 4
-set --
+# Конфиг oxlint выбирается по ПЕРВОМУ файлу набора, поэтому смешанный коммит
+# «фронт + сервер» гонял серверные файлы через фронтовый конфиг и давал ложные
+# ошибки (18 x consistent-type-imports на sign-in-up.service.ts, 2026-10-12).
+# Теперь файлы группируются по пакету и каждая группа линтится своим конфигом.
+SERVER_FILES=""
+FRONT_FILES=""
+OTHER_FILES=""
 while IFS= read -r f; do
   [ -n "$f" ] || continue
-  set -- "$@" "$f"
+  case "$f" in
+    packages/twenty-server/*) SERVER_FILES="$SERVER_FILES $f" ;;
+    packages/twenty-front/*) FRONT_FILES="$FRONT_FILES $f" ;;
+    *) OTHER_FILES="$OTHER_FILES $f" ;;
+  esac
 done <<EOF
 $STAGED_TS
 EOF
+
+echo "pre-commit: oxlint ($COUNT file(s), timeout 15s на группу)…"
+
+lint_group() { # $1 = путь к .oxlintrc.json или "", $2.. = файлы
+  lint_cfg="$1"
+  shift
+  [ $# -eq 0 ] && return 0
+  if [ -n "$lint_cfg" ]; then
+    run_with_timeout npx --no-install oxlint -c "$lint_cfg" "$@"
+  else
+    run_with_timeout npx --no-install oxlint "$@"
+  fi
+}
 
 run_with_timeout() {
   # $@ = oxlint args after binary
@@ -82,13 +93,26 @@ run_with_timeout() {
 }
 
 set +e
-if [ -n "$OXLINT_CFG" ]; then
-  run_with_timeout npx --no-install oxlint -c "$OXLINT_CFG" "$@"
-else
-  run_with_timeout npx --no-install oxlint "$@"
-fi
-rc=$?
+rc=0
+had_timeout=0
+run_group_and_track() {
+  "$@"
+  group_rc=$?
+  case "$group_rc" in
+    124|137|143) had_timeout=1 ;;
+    0) ;;
+    *) [ "$rc" -eq 0 ] && rc="$group_rc" ;;
+  esac
+}
+run_group_and_track lint_group packages/twenty-server/.oxlintrc.json $SERVER_FILES
+run_group_and_track lint_group packages/twenty-front/.oxlintrc.json $FRONT_FILES
+run_group_and_track lint_group "" $OTHER_FILES
 set -e
+
+if [ "$rc" -eq 0 ] && [ "$had_timeout" -eq 1 ]; then
+  echo "pre-commit: oxlint превысил 15с в одной из групп — пропуск (полный lint в CI)."
+  exit 0
+fi
 
 # 124 = GNU timeout; 137/143 = SIGKILL/SIGTERM from our watcher
 if [ "$rc" -eq 124 ] || [ "$rc" -eq 137 ] || [ "$rc" -eq 143 ]; then
