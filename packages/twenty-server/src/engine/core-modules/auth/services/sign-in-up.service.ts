@@ -123,7 +123,8 @@ export class SignInUpService {
       firstName: newUserPayload.firstName ?? '',
       lastName: newUserPayload.lastName ?? '',
       picture: newUserPayload.picture ?? '',
-      locale: newUserPayload.locale ?? 'en',
+      // U-6: у нового пользователя по умолчанию русская локаль.
+      locale: newUserPayload.locale ?? 'ru-RU',
       isEmailVerified: newUserPayload.isEmailAlreadyVerified,
     };
 
