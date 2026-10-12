@@ -6,11 +6,15 @@ CI (`check-core-patches`, `.github/workflows/fork-ci.yaml`) падает, MR в 
 ## Правила
 
 - Наше (без записи в реестр): `packages/twenty-front/src/modules/smb-*` (визуал, M2),
-  `packages/smb-*`, `apps/`, `docs/`, `scripts/`, `smb/`, `.github/`, `.gitlab-ci*`
+  `packages/twenty-server/src/modules/smb-*` (сервер, M1),
+  `packages/twenty-apps/smb/` (App модулей), `packages/smb-*`, `apps/`, `docs/`,
+  `scripts/`, `smb/`, `.github/`, `.gitlab-ci*`
   — новый код только там (см. раздел «Форк» в `CLAUDE.md`).
-  Паттерн в гейте: `^packages/twenty-front/src/modules/smb-[a-z0-9-]+/` —
-  **только фронт и скин** (решение владельца 2026-10-09); серверная половина
-  размещения (M1 против M2) остаётся открытой до A2 п.2.1.
+  Паттерны в гейте: `^packages/twenty-front/src/modules/smb-[a-z0-9-]+/`,
+  `^packages/twenty-server/src/modules/smb-[a-z0-9-]+/`, `^packages/twenty-apps/smb/`
+  (решения владельца 2026-10-09 и 2026-10-12, ADR-009 п.4; расширение OURS —
+  отдельный коммит M-1 с bats-кейсами M1-1…M1-5). Серверный паттерн точный:
+  каталоги upstream-модулей `twenty-server/src/modules/*` в OURS не входят.
 - Всё остальное (ядро Twenty) — строка в таблице ниже, обязательна.
 - Правка ядра больше одной строки — дополнительно ADR: `docs/adr/ADR-NNN-<тема>.md`
   (каталог ADR — `docs/adr/`, см. `docs/adr/README.md`; исторические решения — `docs/arch/NN-<тема>.md`).
@@ -43,4 +47,4 @@ CI (`check-core-patches`, `.github/workflows/fork-ci.yaml`) падает, MR в 
 | P-016 | TODO.md | новый файл в корне: очередь работ для агента | вход владельца 2026-10-12: список задач должен лежать в корне репозитория; у upstream такого файла нет | нет | низкий |
 | P-017 | package.json | одна новая строка: скрипт `"smb:module": "node scripts/smb-module.mjs"` | команда генератора модулей (TODO M-5, ADR-009 «Процессно»); больше ядро не меняется | нет | низкий |
 | P-010 | .github/CODEOWNERS | в конец добавлены правила владельца форка (`@HaiiroShizumu`) на `docs/PATCHES.md`, `docs/adr/`, `docs/arch/`, `scripts/check-core-patches.sh`, `scripts/verify-citations.sh`, `.github/workflows/`; upstream-блок с командой Twenty сохранён | включить «Require review from Code Owners» по нашим путям; без этого PR в main мог бы пройти мимо владельца. Задача A3 (R02) | нет | низкий (дописывание в конец, не перезапись) |
-| P-018 | packages/twenty-apps/smb/ | каталог App модулей форка (создаёт `yarn smb:module new`, M-5) | каталог наш по ADR-009 п.1, но вне списка OURS гейта — расширение OURS пойдёт отдельным коммитом с ревью владельца (M-1) | нет | низкий |
+| P-018 | packages/twenty-apps/smb/ | каталог App модулей форка (создаёт `yarn smb:module new`, M-5) | каталог наш по ADR-009 п.1; **OURS расширен коммитом M-1** (2026-10-12, ревью владельца, bats M1-2/M1-5), строка оставлена как страховка | нет | низкий |

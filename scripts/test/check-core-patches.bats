@@ -190,3 +190,50 @@ add_row() {
   [ "$status" -eq 1 ]
   [[ "$output" == *"smb-skin/legacy-from-upstream.ts"* ]]
 }
+
+# --- M1: OURS = packages/twenty-server/src/modules/smb-*/ и packages/twenty-apps/smb/
+# (решение владельца 2026-10-12, ADR-009 п.4; отдельный коммит + кейсы) ---
+
+@test "M1-1: new file in twenty-server/src/modules/smb-tasks -> exit 0 (A + OURS)" {
+  mkdir -p "$REPO/packages/twenty-server/src/modules/smb-tasks/hooks"
+  echo 'export const h = () => {};' > "$REPO/packages/twenty-server/src/modules/smb-tasks/hooks/taskPreHook.ts"
+  git -C "$REPO" add packages/twenty-server/src/modules/smb-tasks/hooks/taskPreHook.ts
+  check --staged
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"правок ядра нет"* ]]
+}
+
+@test "M1-2: new file in packages/twenty-apps/smb/demo -> exit 0 (A + OURS)" {
+  mkdir -p "$REPO/packages/twenty-apps/smb/demo/src"
+  echo 'export const cfg = {};' > "$REPO/packages/twenty-apps/smb/demo/src/application-config.ts"
+  git -C "$REPO" add packages/twenty-apps/smb/demo/src/application-config.ts
+  check --staged
+  [ "$status" -eq 0 ]
+}
+
+@test "M1-3: new module dir without smb- prefix -> exit 1 (A outside OURS)" {
+  mkdir -p "$REPO/packages/twenty-server/src/modules/smb"
+  echo 'export const x = 1;' > "$REPO/packages/twenty-server/src/modules/smb/index.ts"
+  git -C "$REPO" add packages/twenty-server/src/modules/smb/index.ts
+  check --staged
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"packages/twenty-server/src/modules/smb/index.ts"* ]]
+}
+
+@test "M1-4: new file in sibling server module (not smb-*) -> exit 1" {
+  mkdir -p "$REPO/packages/twenty-server/src/modules/calendar-sync"
+  echo 'export const x = 1;' > "$REPO/packages/twenty-server/src/modules/calendar-sync/hotfix.ts"
+  git -C "$REPO" add packages/twenty-server/src/modules/calendar-sync/hotfix.ts
+  check --staged
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"calendar-sync/hotfix.ts"* ]]
+}
+
+@test "M1-5: new file in packages/twenty-apps outside smb/ -> exit 1" {
+  mkdir -p "$REPO/packages/twenty-apps/internal"
+  echo 'export const x = 1;' > "$REPO/packages/twenty-apps/internal/hotfix.ts"
+  git -C "$REPO" add packages/twenty-apps/internal/hotfix.ts
+  check --staged
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"packages/twenty-apps/internal/hotfix.ts"* ]]
+}

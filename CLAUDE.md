@@ -56,8 +56,11 @@ npx nx run twenty-front:graphql:generate      # after GraphQL schema changes (--
 Правила форка Twenty (база и порядок обновления — `docs/arch/UPSTREAM_BASE.md`, реестр правок — `docs/PATCHES.md`):
 
 - Новый код — в наших каталогах: `docs/`, `scripts/`, `smb/`, `apps/`, `packages/smb-*`,
-  `.claude/`, `.cursor/`, `.github/workflows/fork-`, а для визуала —
-  `packages/twenty-front/src/modules/smb-*` (M2, решение владельца 2026-10-09; паттерн живёт в OURS гейта).
+  `.claude/`, `.cursor/`, `.github/workflows/fork-`, для визуала —
+  `packages/twenty-front/src/modules/smb-*` (M2, решение владельца 2026-10-09), для серверной
+  части модулей — `packages/twenty-server/src/modules/smb-*` и `packages/twenty-apps/smb/`
+  (M1, решение владельца 2026-10-12, ADR-009 п.4; паттерны живут в OURS гейте,
+  кейсы bats M1-1…M1-5).
   Код из соседнего `../new-crm-master` (база v2.42.6) не переносить вслепую — сначала резолв-тест против v2.45.6.
 - Правка ядра (файл вне наших каталогов) требует строки в `docs/PATCHES.md`; правка больше одной строки — плюс ADR в `docs/adr/NNN-<тема>.md`. Без записи падает CI `check-core-patches`.
 - Ослабление гейта (OURS, allowlist) — только отдельным коммитом с ревью владельца и bats-кейсами.

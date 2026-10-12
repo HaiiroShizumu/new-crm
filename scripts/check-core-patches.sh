@@ -36,9 +36,13 @@ done
 # коммитятся (docs/PATCHES.md) — для них запись в реестр не предусмотрена,
 # иначе гейт упирался бы в правило, которого нельзя придержаться.
 # M2 (решение владельца 2026-10-09): код фронта/скина живёт в каталогах
-# packages/twenty-front/src/modules/smb-*. Серверную часть сюда НЕ включаем —
-# её размещение (M1 против M2) выбирается отдельно по A2 п.2.1.
-OURS='(^|/)locales/(generated/|.*\.po$)|^(packages/smb-|apps/|docs/|scripts/|smb/|\.claude/|\.cursor/|\.github/workflows/fork-|packages/twenty-front/src/modules/smb-[a-z0-9-]+/)'
+# packages/twenty-front/src/modules/smb-*.
+# M1 (решение владельца 2026-10-12, ADR-009 п.4): серверная часть модулей —
+# packages/twenty-server/src/modules/smb-*, каталоги App — packages/twenty-apps/smb/.
+# Расширение OURS ушло отдельным коммитом с bats-кейсами (TODO M-1).
+# Паттерн точный (smb-[a-z0-9-]+): каталоги upstream-модулей
+# twenty-server/src/modules/* в OURS не входят.
+OURS='(^|/)locales/(generated/|.*\.po$)|^(packages/smb-|apps/|docs/|scripts/|smb/|\.claude/|\.cursor/|\.github/workflows/fork-|packages/twenty-front/src/modules/smb-[a-z0-9-]+/|packages/twenty-server/src/modules/smb-[a-z0-9-]+/|packages/twenty-apps/smb/)'
 
 # core.quotepath=false: иначе git оборачивает пути с не-ASCII (кириллица в
 # docs/bitrix-audit/, docs/tooling/) в двойные кавычки, '^docs/' не матчится,
