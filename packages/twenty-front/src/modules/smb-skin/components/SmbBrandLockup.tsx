@@ -1,7 +1,8 @@
 import { styled } from '@linaria/react';
+import { useState } from 'react';
 import { themeCssVariables } from 'twenty-ui/theme';
 
-import { SMB_COMPANY_LOGO_URL } from '@/smb-skin/constants/SmbCompanyLogoUrl';
+import { useSmbBrand } from '@/smb-brand/hooks/useSmbBrand';
 import { NavigationDrawerAnimatedCollapseWrapper } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerAnimatedCollapseWrapper';
 
 // Purely presentational: the workspace switcher used to live on this spot and
@@ -32,11 +33,24 @@ const StyledWordmark = styled.div`
   white-space: nowrap;
 `;
 
-export const SmbBrandLockup = () => (
-  <StyledLockup data-smb-brand-lockup>
-    <StyledLogo src={SMB_COMPANY_LOGO_URL} alt="" />
-    <NavigationDrawerAnimatedCollapseWrapper>
-      <StyledWordmark>KeySpace</StyledWordmark>
-    </NavigationDrawerAnimatedCollapseWrapper>
-  </StyledLockup>
-);
+export const SmbBrandLockup = () => {
+  const { name, logoUrl } = useSmbBrand();
+  // Ассет логотипа по умолчанию в git отсутствует (см. SmbProductBrand) —
+  // прячем картинку вместо «битого» изображения.
+  const [isLogoBroken, setIsLogoBroken] = useState(false);
+
+  return (
+    <StyledLockup data-smb-brand-lockup data-smb-brand-name={name}>
+      {!isLogoBroken && logoUrl !== '' && (
+        <StyledLogo
+          src={logoUrl}
+          alt=""
+          onError={() => setIsLogoBroken(true)}
+        />
+      )}
+      <NavigationDrawerAnimatedCollapseWrapper>
+        <StyledWordmark>{name}</StyledWordmark>
+      </NavigationDrawerAnimatedCollapseWrapper>
+    </StyledLockup>
+  );
+};
