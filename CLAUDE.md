@@ -51,10 +51,19 @@ npx nx run twenty-front:graphql:generate      # after GraphQL schema changes (--
 
 ## Форк
 
+**Общая картина (два репозитория, план, карта отчётов, статус) — `../DIRECTIVE.md`, читать первой.**
+
 Правила форка Twenty (база и порядок обновления — `docs/arch/UPSTREAM_BASE.md`, реестр правок — `docs/PATCHES.md`):
 
-- Новый код только в `packages/smb-*` или `apps/`; файлы в других местах не создавать.
-- Правка ядра (файл вне `packages/smb-*`, `apps/`, `docs/`, `scripts/`, `smb/`, `.github/`, `.gitlab-ci`) требует строки в `docs/PATCHES.md`; правка больше одной строки — плюс ADR в `docs/arch/NN-<тема>.md`. Без записи падает CI `check-core-patches`.
+- Новый код — в наших каталогах: `docs/`, `scripts/`, `smb/`, `apps/`, `packages/smb-*`,
+  `.claude/`, `.cursor/`, `.github/workflows/fork-`, а для визуала —
+  `packages/twenty-front/src/modules/smb-*` (M2, решение владельца 2026-10-09; паттерн живёт в OURS гейта).
+  Код из соседнего `../new-crm-master` (база v2.42.6) не переносить вслепую — сначала резолв-тест против v2.45.6.
+- Правка ядра (файл вне наших каталогов) требует строки в `docs/PATCHES.md`; правка больше одной строки — плюс ADR в `docs/adr/NNN-<тема>.md`. Без записи падает CI `check-core-patches`.
+- Ослабление гейта (OURS, allowlist) — только отдельным коммитом с ревью владельца и bats-кейсами.
 - Не писать «тест прошёл», если тест не запускался: указывать `NOT RUN` и причину.
+- Тяжёлое (`docker build`, `nx build`, `jest` целиком, Playwright, гонки по истории) — с согласования,
+  `nice -n 19`, и не при swap > 80% (`sysctl vm.swapusage`).
 - Не коммитить `locales/*.po` и `locales/generated/*`, если задача не про переводы.
 - Обновление с upstream — только по регламенту `docs/arch/UPSTREAM_BASE.md` (ветка `update/upstream-<тег>`, конфликты разрешаются только по реестру `docs/PATCHES.md`).
+- Каждую завершённую задачу — отчётом в `docs/reports/` (Сделано / Подтверждено / NOT RUN / Расхождения / Вопросы) + записью в `docs/CONTEXT-LOG.md`.
