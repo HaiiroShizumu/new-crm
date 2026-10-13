@@ -5,7 +5,7 @@ import { isDefined } from 'twenty-shared/utils';
 import { workflowRunSchema } from 'twenty-shared/workflow';
 
 // Штатный useWorkflowRun не подходит: он бросает исключение, когда состояние
-// запуска не проходит схему (R15, «Разбор блока C»), и тянет запись целиком.
+// запуска не проходит схему, и тянет запись целиком.
 // Здесь читаются только id, status и state, а схема проверяется через safeParse,
 // как в useSmbDocflowTasks — сломавшийся запуск не должен ронять предпросмотр.
 export const useSmbDocflowRunState = (

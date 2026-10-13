@@ -1,10 +1,11 @@
 import { SMB_DOCFLOW_PATH } from '@/smb-docflow/constants/SmbDocflowPath';
 import { type SmbModuleManifest } from '@/smb-modules/types/SmbModuleManifest';
 
-// Документооборот (ADR-016). Пока у модуля нет App с объектами документов,
-// он работает только на штатных процессах и включён всегда (isPlatform).
-// Когда появится App `docflow` (TODO §13), убрать isPlatform и подставить его
-// applicationUniversalIdentifier: модуль дополнительный и включается установкой.
+// Документооборот (ADR-016). Задания и процессы работают на штатных процессах
+// без приложения, поэтому модуль включён всегда (isPlatform). Приложение
+// `packages/twenty-apps/smb/docflow` с тем же applicationUniversalIdentifier
+// добавляет документы; когда его установка проверена (TODO L-2), isPlatform
+// снимается: по ADR-013 п.3 это дополнительный модуль.
 export const SMB_DOCFLOW_MODULE_MANIFEST = {
   key: 'docflow',
   isPlatform: true,
