@@ -115,14 +115,15 @@ cd ../.. && npx jest packages/twenty-server/src/modules/smb-bitrix --config=pack
      состоянием (R15).
   3. Под формой в `SmbDocflowTaskPreview.tsx` показать список шагов: название и статус.
      `docs/reports/R23.md`.
-- [ ] **H-9. Тесты формы.** `components/__tests__/SmbDocflowForm.test.tsx`: (1) при пустом
+- [x] **H-9. Тесты формы.** `components/__tests__/SmbDocflowForm.test.tsx`: (1) при пустом
   обязательном поле `onSubmit` возвращает его, и на экране появляется текст «Заполните: …» с
   подписью поля; (2) у обязательного поля в подписи есть звёздочка; (3) поле с `settings.smbRole` не
   отображается. Обязательность задаётся через `settings: { smbIsRequired: true }`. Окружение теста
   взять из `packages/twenty-front/src/modules/workflow/workflow-steps/filters/components/__tests__/WorkflowStepFilterValueCompositeInput.test.tsx`.
   Запросы по видимому тексту и ролям, взаимодействие через `@testing-library/user-event`. Если
   `WorkflowFormFields` не рендерится в тесте без большого набора провайдеров, не подменять его
-  заглушкой молча: записать в отчёт, чего не хватило.
+  заглушкой молча: записать в отчёт, чего не хватило. `docs/reports/R24.md` (включая прогон `tsgo`
+  по `twenty-front` в конце блока: 9 прежних ошибок, в `smb-docflow` — 0).
 
 ### Канал Б24
 

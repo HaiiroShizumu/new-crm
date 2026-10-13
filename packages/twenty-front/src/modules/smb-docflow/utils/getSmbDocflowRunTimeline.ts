@@ -14,7 +14,7 @@ type SmbDocflowRunTimelineStep = {
 // Шаги так, как они идут в схеме процесса: статус берётся из состояния
 // запуска, шаг, до которого дело не дошло, помечается как ещё не начатый.
 export const getSmbDocflowRunTimeline = (
-  state: WorkflowRun['state'],
+  state: WorkflowRun['state'] | undefined,
 ): SmbDocflowRunTimelineStep[] => {
   if (!isDefined(state)) {
     return [];

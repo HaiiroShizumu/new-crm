@@ -9,6 +9,18 @@
 
 ---
 
+## Запись 27 — 2026-10-13 (Hermes, H-9: тесты формы, блок «Интерфейс» закрыт)
+
+**Сделано:** H-9 — `components/__tests__/SmbDocflowForm.test.tsx` (3 проверки: «Заполните: …» с подписью поля, звёздочка у обязательного, поле со `smbRole` не показывается), `WorkflowFormFields` не подменялся. По прогону `tsgo` поправлены 4 своих ошибки (`getSmbDocflowRunTimeline` принимает `undefined`, `__typename` в типе исполнителя, `FieldMetadataType.TEXT` в тесте). Отчёт — `docs/reports/R24.md`.
+
+**Подтверждено:** oxfmt, oxlint 0/0, jest по модулю 7 сьютов / 33 теста; `free -m` → 6188 МБ доступно; `tsgo -p tsconfig.json --noEmit` в `packages/twenty-front` — 9 ошибок, все прежние (`smb-absences` 4, `smb-feed` 3, `smb-org-structure` 2), в `smb-docflow`/`smb-embed` — 0. Первый запуск `tsgo` убит OOM (swap был занят), повтор после освобождения памяти прошёл.
+
+**NOT RUN:** браузер (V-2).
+
+**Открыто:** блок H-1…H-9 закрыт; дальше H-10…H-14 (канал Б24), затем H-15…H-19 (документы). Вопрос в R24: расширять ли `transformIgnorePatterns` в `jest.config.mjs` ради рендера BlockNote без мока.
+
+---
+
 ## Запись 26 — 2026-10-13 (Hermes, H-8: шаги процесса в предпросмотре)
 
 **Сделано:** H-8 — `utils/getSmbDocflowRunTimeline.ts` + тест (3 проверки), `hooks/useSmbDocflowRunState.ts` (`useFindOneRecord` по `WorkflowRun` с полями `id/status/state` + `workflowRunSchema.safeParse`, при неуспехе `undefined`, штатный `useWorkflowRun` не используется), блок «Шаги процесса» под формой в `SmbDocflowTaskPreview`. Отчёт — `docs/reports/R23.md`.

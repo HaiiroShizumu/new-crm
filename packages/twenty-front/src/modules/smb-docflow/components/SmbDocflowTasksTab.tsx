@@ -17,6 +17,7 @@ import { sortSmbDocflowTasks } from '@/smb-docflow/utils/sortSmbDocflowTasks';
 import { formatDate } from '~/utils/date-utils';
 
 type SmbDocflowAssigneeRecord = {
+  __typename: string;
   id: string;
   name?: { firstName?: string | null; lastName?: string | null } | null;
 };
@@ -89,13 +90,12 @@ const StyledMutedCell = styled(StyledTableCell)`
 export const SmbDocflowTasksTab = () => {
   const { t } = useLingui();
   const { tasks, loading } = useSmbDocflowTasks();
-  const { records: workspaceMembers } = useFindManyRecords<
-    SmbDocflowAssigneeRecord & { __typename?: string }
-  >({
-    objectNameSingular: CoreObjectNameSingular.WorkspaceMember,
-    limit: WORKSPACE_MEMBERS_LIMIT,
-    recordGqlFields: { id: true, name: true },
-  });
+  const { records: workspaceMembers } =
+    useFindManyRecords<SmbDocflowAssigneeRecord>({
+      objectNameSingular: CoreObjectNameSingular.WorkspaceMember,
+      limit: WORKSPACE_MEMBERS_LIMIT,
+      recordGqlFields: { id: true, name: true },
+    });
   const [selectedTaskId, setSelectedTaskId] = useState<string | undefined>();
 
   if (loading) {
