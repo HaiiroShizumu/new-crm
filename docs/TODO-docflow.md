@@ -70,10 +70,11 @@ cd ../.. && npx jest packages/twenty-server/src/modules/smb-bitrix --config=pack
 - [x] **H-1. Иконка пункта меню.** В `manifest.ts` заменить `icon: 'IconFileText'` на
   `icon: 'IconFiles'`. Готово: проверки фронта проходят, в отчёте одна строка diff.
   `docs/reports/R16.md`.
-- [ ] **H-2. Состояние загрузки.** Новый компонент `components/SmbDocflowListSkeleton.tsx`: 5 серых
+- [x] **H-2. Состояние загрузки.** Новый компонент `components/SmbDocflowListSkeleton.tsx`: 5 серых
   строк высотой как `SmbDocflowListRow`. В `SmbDocflowTasksTab.tsx` и `SmbDocflowProcessesTab.tsx`
   показывать его, пока `loading === true`, вместо пустого экрана. Библиотеку скелетонов не
   подключать, это пять `div` с фоном `themeCssVariables.background.tertiary`.
+  `docs/reports/R17.md`.
 - [ ] **H-3. Кнопки «Создать» и «Изменить» на вкладке «Процессы».** «Создать» это `<Link>` на
   `/objects/workflows`, над списком. «Изменить» в `SmbDocflowProcessPreview.tsx` это `<Link>` на
   `getAppPath(AppPath.RecordShowPage, { objectNameSingular: 'workflow', objectRecordId: process.workflowId })`.

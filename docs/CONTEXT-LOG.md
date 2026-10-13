@@ -9,6 +9,16 @@
 
 ---
 
+## Запись 20 — 2026-10-13 (Hermes, H-2: скелетон загрузки)
+
+**Сделано:** H-2 — новый `components/SmbDocflowListSkeleton.tsx` (пять `div` с фоном `background.tertiary`, отступы и граница как у `SmbDocflowListRow`, высота строки через `&nbsp;`), показ в `SmbDocflowTasksTab` и `SmbDocflowProcessesTab`, пока `loading === true`. Отчёт — `docs/reports/R17.md`.
+
+**Подтверждено:** oxlint 0/0 (58 файлов), oxfmt, jest по модулю 4/21 — зелёные, выводы в R17. **NOT RUN:** браузер (V-2), `tsgo` по пакету (в конце блока H-9).
+
+**Открыто:** H-3…H-19 по порядку.
+
+---
+
 ## Запись 19 — 2026-10-13 (Hermes, H-1: иконка документооборота)
 
 **Вход:** задача `t_3feefd6b`: пройти `docs/TODO-docflow.md`, блок «H. Задачи Hermes», сверху вниз; одна задача = один коммит = один отчёт.

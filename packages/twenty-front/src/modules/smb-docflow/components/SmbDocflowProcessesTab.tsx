@@ -4,6 +4,7 @@ import { isDefined } from 'twenty-shared/utils';
 
 import { SmbDocflowEmptyState } from '@/smb-docflow/components/SmbDocflowEmptyState';
 import { SmbDocflowListRow } from '@/smb-docflow/components/SmbDocflowListRow';
+import { SmbDocflowListSkeleton } from '@/smb-docflow/components/SmbDocflowListSkeleton';
 import { SmbDocflowProcessPreview } from '@/smb-docflow/components/SmbDocflowProcessPreview';
 import { SmbDocflowSplitLayout } from '@/smb-docflow/components/SmbDocflowSplitLayout';
 import { useSmbDocflowProcesses } from '@/smb-docflow/hooks/useSmbDocflowProcesses';
@@ -16,7 +17,11 @@ export const SmbDocflowProcessesTab = () => {
     string | undefined
   >();
 
-  if (!loading && processes.length === 0) {
+  if (loading) {
+    return <SmbDocflowListSkeleton />;
+  }
+
+  if (processes.length === 0) {
     return (
       <SmbDocflowEmptyState message={t`Процессов для запуска пока нет.`} />
     );

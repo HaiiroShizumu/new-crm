@@ -6,6 +6,7 @@ import { themeCssVariables } from 'twenty-ui/theme';
 
 import { SmbDocflowEmptyState } from '@/smb-docflow/components/SmbDocflowEmptyState';
 import { SmbDocflowListRow } from '@/smb-docflow/components/SmbDocflowListRow';
+import { SmbDocflowListSkeleton } from '@/smb-docflow/components/SmbDocflowListSkeleton';
 import { SmbDocflowSplitLayout } from '@/smb-docflow/components/SmbDocflowSplitLayout';
 import { SmbDocflowTaskPreview } from '@/smb-docflow/components/SmbDocflowTaskPreview';
 import { useSmbDocflowTasks } from '@/smb-docflow/hooks/useSmbDocflowTasks';
@@ -29,7 +30,11 @@ export const SmbDocflowTasksTab = () => {
   const { tasks, loading } = useSmbDocflowTasks();
   const [selectedTaskId, setSelectedTaskId] = useState<string | undefined>();
 
-  if (!loading && tasks.length === 0) {
+  if (loading) {
+    return <SmbDocflowListSkeleton />;
+  }
+
+  if (tasks.length === 0) {
     return <SmbDocflowEmptyState message={t`Заданий нет.`} />;
   }
 
