@@ -127,7 +127,7 @@ cd ../.. && npx jest packages/twenty-server/src/modules/smb-bitrix --config=pack
 
 ### Канал Б24
 
-- [ ] **H-10. Переменные в compose.** В `smb/deploy/docker-compose.yml` в блок
+- [x] **H-10. Переменные в compose.** В `smb/deploy/docker-compose.yml` в блок
   `x-app-environment` (строка 15) после строк `STORAGE_S3_*` добавить
   `SMB_BITRIX_CLIENT_ID: ${SMB_BITRIX_CLIENT_ID:-}`, `SMB_BITRIX_CLIENT_SECRET: ${SMB_BITRIX_CLIENT_SECRET:-}`,
   `SMB_BITRIX_AUTO_PROVISION_WORKSPACE: ${SMB_BITRIX_AUTO_PROVISION_WORKSPACE:-false}`. Те же три
@@ -135,7 +135,7 @@ cd ../.. && npx jest packages/twenty-server/src/modules/smb-bitrix --config=pack
   `docker compose … config` в контейнере недоступна (Docker нет): записать `NOT RUN`, вместо неё
   из корня репозитория
   `node -e "require('yaml').parse(require('fs').readFileSync('smb/deploy/docker-compose.yml','utf8'),{merge:true});console.log('yaml ok')"`
-  и вывод.
+  и вывод. `docs/reports/R25.md`.
 - [ ] **H-11. Документ для оператора** `docs/ops/bitrix-app.md`: что вписать в карточку приложения
   в кабинете вендора Б24. Адрес приложения `https://<корень>/webhooks/smb-bitrix/app`, адрес
   установки `…/install`, обработчик событий `…/event` для `ONAPPINSTALL` и `ONAPPUNINSTALL`, права

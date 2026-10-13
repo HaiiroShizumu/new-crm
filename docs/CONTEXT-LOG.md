@@ -9,6 +9,16 @@
 
 ---
 
+## Запись 28 — 2026-10-13 (Hermes, H-10: переменные канала Б24 в compose)
+
+**Сделано:** H-10 — в `smb/deploy/docker-compose.yml` (блок `x-app-environment`) добавлены `SMB_BITRIX_CLIENT_ID`, `SMB_BITRIX_CLIENT_SECRET`, `SMB_BITRIX_AUTO_PROVISION_WORKSPACE`, в `smb/deploy/.env.example` те же три имени с пустыми значениями (лежали закомментированными — раскомментированы). Отчёт — `docs/reports/R25.md`.
+
+**Подтверждено:** разбор compose yaml парсером с merge (вывод в R25, якорь доходит до `server.environment`); oxlint `smb-bitrix` 0 ошибок / 4 прежних предупреждения; jest `smb-bitrix` 7 сьютов / 46 тестов. **NOT RUN:** `docker compose config` (Docker в контейнере нет).
+
+**Открыто:** H-11…H-19 по порядку.
+
+---
+
 ## Запись 27 — 2026-10-13 (Hermes, H-9: тесты формы, блок «Интерфейс» закрыт)
 
 **Сделано:** H-9 — `components/__tests__/SmbDocflowForm.test.tsx` (3 проверки: «Заполните: …» с подписью поля, звёздочка у обязательного, поле со `smbRole` не показывается), `WorkflowFormFields` не подменялся. По прогону `tsgo` поправлены 4 своих ошибки (`getSmbDocflowRunTimeline` принимает `undefined`, `__typename` в типе исполнителя, `FieldMetadataType.TEXT` в тесте). Отчёт — `docs/reports/R24.md`.
