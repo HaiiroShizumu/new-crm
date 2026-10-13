@@ -10,6 +10,31 @@ x-logging: &default-logging
     max-size: '20m'
     max-file: '5'
 
+# Server and worker must see the same config: a worker without the S3 keys or
+# the multi-workspace flag builds different file paths and workspace URLs.
+x-app-environment: &app-environment
+  PG_DATABASE_URL: postgres://${PG_DATABASE_USER:-postgres}:${PG_DATABASE_PASSWORD}@${PG_DATABASE_HOST:-db}:${PG_DATABASE_PORT:-5432}/${PG_DATABASE_NAME:-default}
+  PG_POOL_MAX_CONNECTIONS: ${PG_POOL_MAX_CONNECTIONS:-10}
+  SERVER_URL: ${SERVER_URL}
+  REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+  TRUST_PROXY: ${TRUST_PROXY:-loopback, linklocal, uniquelocal}
+
+  IS_MULTIWORKSPACE_ENABLED: ${IS_MULTIWORKSPACE_ENABLED:-true}
+  DEFAULT_SUBDOMAIN: ${DEFAULT_SUBDOMAIN:-app}
+
+  STORAGE_TYPE: ${STORAGE_TYPE:-local}
+  STORAGE_S3_REGION: ${STORAGE_S3_REGION:-}
+  STORAGE_S3_NAME: ${STORAGE_S3_NAME:-}
+  STORAGE_S3_ENDPOINT: ${STORAGE_S3_ENDPOINT:-}
+  STORAGE_S3_ACCESS_KEY_ID: ${STORAGE_S3_ACCESS_KEY_ID:-}
+  STORAGE_S3_SECRET_ACCESS_KEY: ${STORAGE_S3_SECRET_ACCESS_KEY:-}
+  STORAGE_S3_PRESIGNED_URL_ENABLED: ${STORAGE_S3_PRESIGNED_URL_ENABLED:-false}
+  STORAGE_S3_PRESIGNED_URL_BASE: ${STORAGE_S3_PRESIGNED_URL_BASE:-}
+
+  ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+  FALLBACK_ENCRYPTION_KEY: ${FALLBACK_ENCRYPTION_KEY:-}
+  APP_SECRET: ${APP_SECRET:-}
+
 services:
   server:
     image: ghcr.io/haiiroshizumu/new-crm:${TAG}
@@ -18,22 +43,10 @@ services:
     ports:
       - '127.0.0.1:${HOST_PORT:-3000}:3000'
     environment:
+      <<: *app-environment
       NODE_PORT: 3000
-      PG_DATABASE_URL: postgres://${PG_DATABASE_USER:-postgres}:${PG_DATABASE_PASSWORD}@${PG_DATABASE_HOST:-db}:${PG_DATABASE_PORT:-5432}/${PG_DATABASE_NAME:-default}
-      SERVER_URL: ${SERVER_URL}
-      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
       DISABLE_DB_MIGRATIONS: ${DISABLE_DB_MIGRATIONS:-}
       DISABLE_CRON_JOBS_REGISTRATION: ${DISABLE_CRON_JOBS_REGISTRATION:-}
-      TRUST_PROXY: ${TRUST_PROXY:-loopback, linklocal, uniquelocal}
-
-      STORAGE_TYPE: ${STORAGE_TYPE:-local}
-      STORAGE_S3_REGION: ${STORAGE_S3_REGION:-}
-      STORAGE_S3_NAME: ${STORAGE_S3_NAME:-}
-      STORAGE_S3_ENDPOINT: ${STORAGE_S3_ENDPOINT:-}
-
-      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
-      FALLBACK_ENCRYPTION_KEY: ${FALLBACK_ENCRYPTION_KEY:-}
-      APP_SECRET: ${APP_SECRET:-}
     depends_on:
       db:
         condition: service_healthy
@@ -53,21 +66,9 @@ services:
       - server-local-data:/app/packages/twenty-server/.local-storage
     command: ['yarn', 'worker:prod']
     environment:
-      PG_DATABASE_URL: postgres://${PG_DATABASE_USER:-postgres}:${PG_DATABASE_PASSWORD}@${PG_DATABASE_HOST:-db}:${PG_DATABASE_PORT:-5432}/${PG_DATABASE_NAME:-default}
-      SERVER_URL: ${SERVER_URL}
-      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      <<: *app-environment
       DISABLE_DB_MIGRATIONS: 'true'
       DISABLE_CRON_JOBS_REGISTRATION: 'true'
-      TRUST_PROXY: ${TRUST_PROXY:-loopback, linklocal, uniquelocal}
-
-      STORAGE_TYPE: ${STORAGE_TYPE:-local}
-      STORAGE_S3_REGION: ${STORAGE_S3_REGION:-}
-      STORAGE_S3_NAME: ${STORAGE_S3_NAME:-}
-      STORAGE_S3_ENDPOINT: ${STORAGE_S3_ENDPOINT:-}
-
-      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
-      FALLBACK_ENCRYPTION_KEY: ${FALLBACK_ENCRYPTION_KEY:-}
-      APP_SECRET: ${APP_SECRET:-}
     depends_on:
       db:
         condition: service_healthy
@@ -78,6 +79,15 @@ services:
 
   db:
     image: postgres:16
+    # Postgres defaults (128MB shared_buffers, 64MB /dev/shm) are sized for a
+    # laptop; every workspace is its own schema with hundreds of relations.
+    command:
+      - postgres
+      - -c
+      - shared_buffers=${PG_SHARED_BUFFERS:-512MB}
+      - -c
+      - effective_cache_size=${PG_EFFECTIVE_CACHE_SIZE:-1536MB}
+    shm_size: 256mb
     volumes:
       - db-data:/var/lib/postgresql/data
     environment:

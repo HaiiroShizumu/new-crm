@@ -1,34 +1,71 @@
 # Install on the VPS next to compose (e.g. /opt/crm/Caddyfile).
-# Generate staging basic-auth hash: caddy hash-password --plaintext '...'
-# Replace STAGING_BASIC_AUTH_HASH before first start.
+# All hosts come from the environment of the caddy process (systemd
+# EnvironmentFile=/opt/crm/caddy.env), nothing is hardcoded here:
+#
+#   ACME_EMAIL=admin@example.ru
+#   CRM_PROD_HOSTS=crm.example.ru, app.crm.example.ru, acme.crm.example.ru
+#   CRM_STAGING_HOSTS=stage.example.ru, app.stage.example.ru
+#   STAGING_BASIC_AUTH_HASH=<caddy hash-password>
+#
+# One workspace = one subdomain of the root (SERVER_URL host). With an explicit
+# host list every host gets its own certificate over HTTP-01 and no Caddy plugin
+# is needed; adding a client = one more host + `systemctl reload caddy`.
+# When workspaces start being created on the fly (Bitrix24 install), switch the
+# list to "crm.example.ru, *.crm.example.ru" and add a `tls { dns <provider> }`
+# block: a wildcard certificate is only issued over DNS-01, which needs a Caddy
+# build with the DNS provider module.
 
 {
-	email admin@crm-systems-ai.ru
+	email {$ACME_EMAIL}
 }
 
-# Staging — closed with basic auth until clients need open access
-dev.crm-systems-ai.ru {
+(crm_site) {
+	encode zstd gzip
+
 	header {
 		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
 		X-Content-Type-Options nosniff
 		Referrer-Policy strict-origin-when-cross-origin
+		-Server
 	}
 
+	# The server sends hashed Vite chunks with "max-age=0", so the browser
+	# revalidates every chunk on every page load. The file name changes with the
+	# content, which makes a year-long immutable cache safe.
+	@hashed_assets path /assets/*
+	header @hashed_assets {
+		Cache-Control "public, max-age=31536000, immutable"
+		defer
+	}
+
+	# Not hashed: must be able to change with a release.
+	@static_images path /images/*
+	header @static_images {
+		Cache-Control "public, max-age=86400"
+		defer
+	}
+
+	# No X-Frame-Options / frame-ancestors here: the server sets them per
+	# workspace (allowedIframeOrigins), a proxy-level value would break the
+	# Bitrix24 iframe.
+	reverse_proxy 127.0.0.1:{args[0]} {
+		# GraphQL subscriptions are SSE; buffering delays realtime events.
+		flush_interval -1
+	}
+}
+
+# Staging: closed with basic auth until clients need open access.
+# Basic auth also blocks the Bitrix24 iframe and incoming webhooks, so Bitrix24
+# experiments need it removed for the tested host.
+{$CRM_STAGING_HOSTS} {
 	basicauth {
-		# user "staging" — replace hash after: caddy hash-password
-		staging STAGING_BASIC_AUTH_HASH
+		staging {$STAGING_BASIC_AUTH_HASH}
 	}
 
-	reverse_proxy 127.0.0.1:3001
+	import crm_site 3001
 }
 
 # Production
-app.crm-systems-ai.ru {
-	header {
-		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-		X-Content-Type-Options nosniff
-		Referrer-Policy strict-origin-when-cross-origin
-	}
-
-	reverse_proxy 127.0.0.1:3000
+{$CRM_PROD_HOSTS} {
+	import crm_site 3000
 }

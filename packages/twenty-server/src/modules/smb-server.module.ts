@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { SmbBitrixModule } from 'src/modules/smb-bitrix/smb-bitrix.module';
 import { SmbConversationsModule } from 'src/modules/smb-conversations/smb-conversations.module';
 import { SmbCoreModule } from 'src/modules/smb-core/smb-core.module';
 
@@ -29,6 +30,7 @@ import { SmbNotificationsModule } from 'src/modules/smb-notifications/smb-notifi
     SmbModulesModule,
     SmbNotificationsModule,
     SmbConversationsModule,
+    SmbBitrixModule,
     // smb:module:list
     SmbTasksModule,
     SmbFeedModule,

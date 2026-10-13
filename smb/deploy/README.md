@@ -2,9 +2,9 @@
 
 | Путь | Назначение |
 |------|------------|
-| `docker-compose.yml` | Staging/prod стек (образ GHCR, loopback ports, TRUST_PROXY, log rotation) |
+| `docker-compose.yml` | Staging/prod стек (образ GHCR, loopback ports, мультиворкспейс, S3, общий env server/worker) |
 | `.env.example` | Шаблон `/opt/crm/{staging,prod}/.env` (секреты не коммитить) |
-| `Caddyfile` | `dev.` / `app.crm-systems-ai.ru`, HSTS, basic auth на staging |
+| `Caddyfile` | Хосты из окружения (корень + сабдомены компаний), сжатие, кэш `/assets/*`, SSE без буфера, basic auth на staging |
 | `bin/deploy.sh` | Идемпотентный деплой + health + rollback |
 | `bin/ssh-forced-command.sh` | Разбор `SSH_ORIGINAL_COMMAND` для GHA-ключа |
 | `bin/backup-daily.sh` | Daily/weekly dump + rclone |

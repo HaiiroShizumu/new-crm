@@ -1,5 +1,8 @@
 import Cookies from 'js-cookie';
 
+import { getSmbEmbeddedCookieAttributes } from '@/smb-embed/utils/getSmbEmbeddedCookieAttributes';
+import { isSmbEmbedded } from '@/smb-embed/utils/isSmbEmbedded';
+
 class CookieStorage {
   private keys: Set<string> = new Set();
 
@@ -17,6 +20,7 @@ class CookieStorage {
     const secureAttributes = {
       secure: window.location.protocol === 'https:',
       sameSite: 'lax' as const,
+      ...getSmbEmbeddedCookieAttributes(isSmbEmbedded()),
       ...attributes,
     };
 
