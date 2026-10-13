@@ -202,7 +202,7 @@
 ## 12. Шлюз и канал Битрикс24 (ADR-008)
 
 > Сторона инстанса написана и перенесена (ADR-015, R12, R13): модуль `smb-bitrix`, `smb-embed`.
-> На портале не проверялась. Очередь проверок и доработок — `docs/TODO-docflow.md` (блоки A, B, D).
+> На портале не проверялась. Очередь доработок — `docs/TODO-docflow.md` (задачи H-10…H-14; разбор — `docs/reports/R15.md`).
 
 - [ ] **B-1** `apps/smb-gateway`: таблицы `instance`, `portal_route`, `route_log`; 307 на инстанс; команды `tenant:create`, `instance:add`.
 - [ ] **B-2** Install через шлюз: белый список доменов Б24, `assertPortalClaim`, выбор инстанса, идемпотентность по `member_id`.
@@ -218,7 +218,7 @@
 ## 13. Документооборот — `smb-documents` (после 2, 6, 9, 12)
 
 > Страница `/docflow` (задания, процессы, заглушка документов) перенесена (ADR-016, R12, R13), ключ
-> модуля — `docflow`. Объекты документов и App — блок C в `docs/TODO-docflow.md`.
+> модуля — `docflow`. Объекты документов и App — задачи H-15…H-19 в `docs/TODO-docflow.md` (разбор — `docs/reports/R15.md`).
 
 - [ ] **D-1** Инвентаризация `new-crm-master/.../modules/doc-management` (107 файлов фронта: branding, documents, embed, navigation, workflows): что ложится в `app/`, что в `server/`, что во `front/` по ADR-009.
 - [ ] **D-2** App: сущности документооборота, роли, вью, шаблоны процессов согласования.
