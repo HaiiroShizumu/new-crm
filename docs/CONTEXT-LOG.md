@@ -9,6 +9,16 @@
 
 ---
 
+## Запись 21 — 2026-10-13 (Hermes, H-3: кнопки «Создать» / «Изменить»)
+
+**Сделано:** H-3 — «Создать» (`<Link>` → `/objects/workflows`) над списком процессов и «Изменить» (`<Link>` → `getAppPath(AppPath.RecordShowPage, { objectNameSingular: 'workflow', objectRecordId })`) в `SmbDocflowProcessPreview`; обе скрыты при `isSmbEmbedded()`. Отчёт — `docs/reports/R18.md`.
+
+**Подтверждено:** oxlint 0/0, oxfmt, jest по модулю 4/21 — зелёные, выводы в R18. **NOT RUN:** браузер (V-2), `tsgo` по пакету (в конце блока H-9 — типы `render`/`getAppPath` подтверждены только линтером).
+
+**Открыто:** H-4…H-19 по порядку.
+
+---
+
 ## Запись 20 — 2026-10-13 (Hermes, H-2: скелетон загрузки)
 
 **Сделано:** H-2 — новый `components/SmbDocflowListSkeleton.tsx` (пять `div` с фоном `background.tertiary`, отступы и граница как у `SmbDocflowListRow`, высота строки через `&nbsp;`), показ в `SmbDocflowTasksTab` и `SmbDocflowProcessesTab`, пока `loading === true`. Отчёт — `docs/reports/R17.md`.

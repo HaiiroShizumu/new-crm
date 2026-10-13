@@ -1,6 +1,11 @@
+import { styled } from '@linaria/react';
 import { useLingui } from '@lingui/react/macro';
 import { useState } from 'react';
-import { isDefined } from 'twenty-shared/utils';
+import { Link } from 'react-router-dom';
+import { AppPath } from 'twenty-shared/types';
+import { getAppPath, isDefined } from 'twenty-shared/utils';
+import { Button } from 'twenty-ui/primitives/input';
+import { themeCssVariables } from 'twenty-ui/theme';
 
 import { SmbDocflowEmptyState } from '@/smb-docflow/components/SmbDocflowEmptyState';
 import { SmbDocflowListRow } from '@/smb-docflow/components/SmbDocflowListRow';
@@ -9,6 +14,14 @@ import { SmbDocflowProcessPreview } from '@/smb-docflow/components/SmbDocflowPro
 import { SmbDocflowSplitLayout } from '@/smb-docflow/components/SmbDocflowSplitLayout';
 import { useSmbDocflowProcesses } from '@/smb-docflow/hooks/useSmbDocflowProcesses';
 import { getSmbFillableFormFields } from '@/smb-docflow/utils/getSmbFillableFormFields';
+import { isSmbEmbedded } from '@/smb-embed/utils/isSmbEmbedded';
+
+const StyledToolbar = styled.div`
+  display: flex;
+  flex-shrink: 0;
+  justify-content: flex-end;
+  padding: ${themeCssVariables.spacing[3]} ${themeCssVariables.spacing[4]};
+`;
 
 export const SmbDocflowProcessesTab = () => {
   const { t } = useLingui();
@@ -30,6 +43,8 @@ export const SmbDocflowProcessesTab = () => {
   const selectedProcess = processes.find(
     (process) => process.workflowVersionId === selectedVersionId,
   );
+  // Inside the portal the workflow editor of the CRM is out of reach.
+  const canOpenWorkflowEditor = !isSmbEmbedded();
 
   return (
     <SmbDocflowSplitLayout
@@ -43,6 +58,23 @@ export const SmbDocflowProcessesTab = () => {
         ) : undefined
       }
     >
+      {canOpenWorkflowEditor && (
+        <StyledToolbar>
+          <Button
+            variant="outline"
+            size="sm"
+            render={
+              <Link
+                to={getAppPath(AppPath.RecordIndexPage, {
+                  objectNamePlural: 'workflows',
+                })}
+              />
+            }
+          >
+            {t`Создать`}
+          </Button>
+        </StyledToolbar>
+      )}
       {processes.map((process) => {
         const parameterCount = getSmbFillableFormFields(
           process.startForm?.settings.input ?? [],

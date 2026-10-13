@@ -75,11 +75,11 @@ cd ../.. && npx jest packages/twenty-server/src/modules/smb-bitrix --config=pack
   показывать его, пока `loading === true`, вместо пустого экрана. Библиотеку скелетонов не
   подключать, это пять `div` с фоном `themeCssVariables.background.tertiary`.
   `docs/reports/R17.md`.
-- [ ] **H-3. Кнопки «Создать» и «Изменить» на вкладке «Процессы».** «Создать» это `<Link>` на
+- [x] **H-3. Кнопки «Создать» и «Изменить» на вкладке «Процессы».** «Создать» это `<Link>` на
   `/objects/workflows`, над списком. «Изменить» в `SmbDocflowProcessPreview.tsx` это `<Link>` на
   `getAppPath(AppPath.RecordShowPage, { objectNameSingular: 'workflow', objectRecordId: process.workflowId })`.
   Если `isSmbEmbedded()` (`@/smb-embed/utils/isSmbEmbedded`) возвращает `true`, обе кнопки не
-  показывать.
+  показывать. `docs/reports/R18.md`.
 - [ ] **H-4. Сортировка заданий.** Утилита `utils/sortSmbDocflowTasks.ts`: вход массив заданий,
   выход новый массив (исходный не менять), по `dueAt` по возрастанию, задания без срока в конце,
   при равенстве по `createdAt`. Тест `utils/__tests__/sortSmbDocflowTasks.test.ts`: со сроком и
