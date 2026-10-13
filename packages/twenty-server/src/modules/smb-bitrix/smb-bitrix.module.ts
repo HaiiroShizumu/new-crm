@@ -7,6 +7,7 @@ import { WorkspaceDomainsModule } from 'src/engine/core-modules/domain/workspace
 import { OnboardingModule } from 'src/engine/core-modules/onboarding/onboarding.module';
 import { SecretEncryptionModule } from 'src/engine/core-modules/secret-encryption/secret-encryption.module';
 import { SecureHttpClientModule } from 'src/engine/core-modules/secure-http-client/secure-http-client.module';
+import { SmbBitrixBindPortalCommand } from 'src/modules/smb-bitrix/commands/smb-bitrix-bind-portal.command';
 import { SmbBitrixController } from 'src/modules/smb-bitrix/controllers/smb-bitrix.controller';
 import { SmbBitrixRepository } from 'src/modules/smb-bitrix/repositories/smb-bitrix.repository';
 import { SmbBitrixResolver } from 'src/modules/smb-bitrix/resolvers/smb-bitrix.resolver';
@@ -51,6 +52,7 @@ import { WorkspaceModule } from 'src/engine/core-modules/workspace/workspace.mod
     SmbBitrixLaunchService,
     SmbBitrixCrmLinkService,
     SmbBitrixResolver,
+    SmbBitrixBindPortalCommand,
   ],
 })
 export class SmbBitrixModule {}
