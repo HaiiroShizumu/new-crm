@@ -67,8 +67,9 @@ cd ../.. && npx jest packages/twenty-server/src/modules/smb-bitrix --config=pack
 `components/SmbDocflowTasksTab.tsx`, хук `hooks/useSmbDocflowTasks.ts`, утилита с тестом
 `utils/getSmbMissingRequiredFields.ts`.
 
-- [ ] **H-1. Иконка пункта меню.** В `manifest.ts` заменить `icon: 'IconFileText'` на
+- [x] **H-1. Иконка пункта меню.** В `manifest.ts` заменить `icon: 'IconFileText'` на
   `icon: 'IconFiles'`. Готово: проверки фронта проходят, в отчёте одна строка diff.
+  `docs/reports/R16.md`.
 - [ ] **H-2. Состояние загрузки.** Новый компонент `components/SmbDocflowListSkeleton.tsx`: 5 серых
   строк высотой как `SmbDocflowListRow`. В `SmbDocflowTasksTab.tsx` и `SmbDocflowProcessesTab.tsx`
   показывать его, пока `loading === true`, вместо пустого экрана. Библиотеку скелетонов не

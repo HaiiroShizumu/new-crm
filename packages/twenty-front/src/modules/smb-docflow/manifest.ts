@@ -22,7 +22,7 @@ export const SMB_DOCFLOW_MODULE_MANIFEST = {
   navigation: [
     {
       labelKey: 'Документооборот',
-      icon: 'IconFileText',
+      icon: 'IconFiles',
       to: SMB_DOCFLOW_PATH,
       group: 'company',
     },
