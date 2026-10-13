@@ -9,6 +9,16 @@
 
 ---
 
+## Запись 25 — 2026-10-13 (Hermes, H-7: панель предпросмотра)
+
+**Сделано:** H-7 — `SmbDocflowSplitLayout`: проп `onClose`, кнопка `LightIconButton` + `IconX` (`aria-label` «Закрыть») справа вверху, анимация `transition: width calc(${themeCssVariables.animation.duration.normal} * 1s)` по образцу `SidePanelForDesktop.tsx:34-48` (панель смонтирована всегда, закрыта — `width: 0`), на ширине < 900px `position: absolute; inset: 0` поверх списка. `onClose` передан в обе вкладки. Отчёт — `docs/reports/R22.md`.
+
+**Подтверждено:** oxfmt, oxlint 0/0, jest по модулю 5/27, `git status` — правлены только три файла задачи. **NOT RUN:** браузер (V-2), `tsgo` по пакету (в конце блока H-9).
+
+**Открыто:** H-8…H-19 по порядку; H-17 должен будет передать `onClose` во вкладку «Документы».
+
+---
+
 ## Запись 24 — 2026-10-13 (Hermes, H-6: таблица остальных заданий)
 
 **Сделано:** H-6 — раздел «Остальные задания» в `SmbDocflowTasksTab` сделан таблицей (задание, процесс, исполнитель, срок, создано): исполнитель через `useFindManyRecords(WorkspaceMember)` по `assigneeWorkspaceMemberId` (нет — `—`), строки через `sortSmbDocflowTasks`, клик по строке выбирает задание. Отчёт — `docs/reports/R21.md`.

@@ -96,13 +96,13 @@ cd ../.. && npx jest packages/twenty-server/src/modules/smb-bitrix --config=pack
   по `task.assigneeWorkspaceMemberId`, показать `name.firstName` и `name.lastName`; исполнителя нет
   — прочерк. Строки отсортировать через `sortSmbDocflowTasks`. Клик по строке выбирает задание, как
   сейчас. `docs/reports/R21.md`.
-- [ ] **H-7. Панель предпросмотра.** `components/SmbDocflowSplitLayout.tsx`: добавить проп
+- [x] **H-7. Панель предпросмотра.** `components/SmbDocflowSplitLayout.tsx`: добавить проп
   `onClose: () => void` и кнопку закрытия (`LightIconButton` с `IconX`, `aria-label` «Закрыть») в
   правом верхнем углу панели. Анимация появления: `transition` ширины длительностью
   `calc(${themeCssVariables.animation.duration.normal} * 1s)`, как в
   `side-panel/components/SidePanelForDesktop.tsx:34-48` (тот файл только читать). На ширине меньше
   900px (`@media (max-width: 900px)`) панель `position: absolute; inset: 0` поверх списка. В обеих
-  вкладках передать `onClose`, который сбрасывает выбранное.
+  вкладках передать `onClose`, который сбрасывает выбранное. `docs/reports/R22.md`.
 - [ ] **H-8. Шаги процесса в предпросмотре задания.**
   1. Утилита `utils/getSmbDocflowRunTimeline.ts`: вход `state` запуска (тип из `WorkflowRun['state']`),
      выход массив `{ stepId, name, status }` в порядке `state.flow.steps`; статус из

@@ -119,6 +119,7 @@ export const SmbDocflowTasksTab = () => {
 
   return (
     <SmbDocflowSplitLayout
+      onClose={() => setSelectedTaskId(undefined)}
       preview={
         isDefined(selectedTask) ? (
           // Keyed by task so the answers typed for one task never leak into another.

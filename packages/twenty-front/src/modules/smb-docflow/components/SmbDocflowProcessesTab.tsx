@@ -48,6 +48,7 @@ export const SmbDocflowProcessesTab = () => {
 
   return (
     <SmbDocflowSplitLayout
+      onClose={() => setSelectedVersionId(undefined)}
       preview={
         isDefined(selectedProcess) ? (
           <SmbDocflowProcessPreview
