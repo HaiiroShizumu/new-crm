@@ -52,7 +52,9 @@ cd ../.. && npx jest packages/twenty-server/src/modules/smb-bitrix --config=pack
   `npx nx run twenty-server:database:migrate:generate --name check-smb-bitrix --type fast`:
   генератор не должен создать ни одного запроса для этих двух таблиц. Если создал, приложить его
   вывод в отчёт и удалить сгенерированный файл, миграцию руками не править.
-- [ ] **A4. Проверить адреса без портала:**
+- [x] **A4.** *(R14: оба режима окружения; `Location` нет ни в одном ответе;
+  расхождение «403 вместо 503 на `member_id=x` без настроек» — в R14, вопрос владельцу)*
+  **Проверить адреса без портала:**
   `curl -si -X POST localhost:3000/webhooks/smb-bitrix/app -d 'member_id=x'`.
   Готово: статус 503 и HTML-страница, если `SMB_BITRIX_*` не заданы; 403 и страница «This page must
   be opened from Bitrix24», если заданы. В обоих случаях в ответе нет заголовка `Location`.
