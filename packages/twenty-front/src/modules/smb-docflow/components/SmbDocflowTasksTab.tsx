@@ -8,6 +8,7 @@ import { SmbDocflowEmptyState } from '@/smb-docflow/components/SmbDocflowEmptySt
 import { SmbDocflowListRow } from '@/smb-docflow/components/SmbDocflowListRow';
 import { SmbDocflowListSkeleton } from '@/smb-docflow/components/SmbDocflowListSkeleton';
 import { SmbDocflowSplitLayout } from '@/smb-docflow/components/SmbDocflowSplitLayout';
+import { SmbDocflowTaskCard } from '@/smb-docflow/components/SmbDocflowTaskCard';
 import { SmbDocflowTaskPreview } from '@/smb-docflow/components/SmbDocflowTaskPreview';
 import { useSmbDocflowTasks } from '@/smb-docflow/hooks/useSmbDocflowTasks';
 import { isSmbDocflowTaskOverdue } from '@/smb-docflow/utils/isSmbDocflowTaskOverdue';
@@ -23,6 +24,14 @@ const StyledSectionTitle = styled.h3`
 
 const StyledOverdue = styled.span`
   color: ${themeCssVariables.font.color.danger};
+`;
+
+// Карточки одного раздела идут в один ряд, длинный список прокручивается вбок.
+const StyledCardRow = styled.div`
+  display: flex;
+  gap: ${themeCssVariables.spacing[3]};
+  overflow-x: auto;
+  padding: 0 ${themeCssVariables.spacing[4]} ${themeCssVariables.spacing[3]};
 `;
 
 export const SmbDocflowTasksTab = () => {
@@ -43,11 +52,6 @@ export const SmbDocflowTasksTab = () => {
   const otherTasks = tasks.filter((task) => !task.isMine);
   const selectedTask = tasks.find((task) => task.id === selectedTaskId);
 
-  const sections = [
-    { title: t`Ждут вас`, sectionTasks: myTasks },
-    { title: t`Остальные задания`, sectionTasks: otherTasks },
-  ].filter(({ sectionTasks }) => sectionTasks.length > 0);
-
   return (
     <SmbDocflowSplitLayout
       preview={
@@ -61,10 +65,25 @@ export const SmbDocflowTasksTab = () => {
         ) : undefined
       }
     >
-      {sections.map(({ title, sectionTasks }) => (
-        <section key={title} aria-label={title}>
-          <StyledSectionTitle>{title}</StyledSectionTitle>
-          {sectionTasks.map((task) => (
+      {myTasks.length > 0 && (
+        <section key="my-tasks" aria-label={t`Ждут вас`}>
+          <StyledSectionTitle>{t`Ждут вас`}</StyledSectionTitle>
+          <StyledCardRow>
+            {myTasks.map((task) => (
+              <SmbDocflowTaskCard
+                key={task.id}
+                task={task}
+                isSelected={task.id === selectedTaskId}
+                onClick={() => setSelectedTaskId(task.id)}
+              />
+            ))}
+          </StyledCardRow>
+        </section>
+      )}
+      {otherTasks.length > 0 && (
+        <section key="other-tasks" aria-label={t`Остальные задания`}>
+          <StyledSectionTitle>{t`Остальные задания`}</StyledSectionTitle>
+          {otherTasks.map((task) => (
             <SmbDocflowListRow
               key={task.id}
               title={task.title}
@@ -80,7 +99,7 @@ export const SmbDocflowTasksTab = () => {
             />
           ))}
         </section>
-      ))}
+      )}
     </SmbDocflowSplitLayout>
   );
 };

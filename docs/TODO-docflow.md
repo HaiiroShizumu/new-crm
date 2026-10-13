@@ -84,12 +84,12 @@ cd ../.. && npx jest packages/twenty-server/src/modules/smb-bitrix --config=pack
   выход новый массив (исходный не менять), по `dueAt` по возрастанию, задания без срока в конце,
   при равенстве по `createdAt`. Тест `utils/__tests__/sortSmbDocflowTasks.test.ts`: со сроком и
   без, равные сроки, пустой массив, исходный массив не изменён. `docs/reports/R19.md`.
-- [ ] **H-5. Карточки «Ждут вас».** Новый компонент `components/SmbDocflowTaskCard.tsx`: название
+- [x] **H-5. Карточки «Ждут вас».** Новый компонент `components/SmbDocflowTaskCard.tsx`: название
   задания, название процесса (`task.workflowRunName`), срок (`formatDate(task.dueAt, 'dd.MM.yyyy')`
   из `~/utils/date-utils`, если срок есть), красная метка «Просрочено» по `isSmbDocflowTaskOverdue`.
   Карточка это `button`, клик вызывает `onClick`. В `SmbDocflowTasksTab.tsx` раздел «Ждут вас»
   показать карточками в один ряд с горизонтальной прокруткой (`overflow-x: auto`). Раздел
-  «Остальные задания» не трогать.
+  «Остальные задания» не трогать. `docs/reports/R20.md`.
 - [ ] **H-6. Таблица остальных заданий** (после H-4). Раздел «Остальные задания» сделать таблицей
   (`table`, `th`, `td`): задание, процесс, исполнитель, срок, создано. Имя исполнителя: хук
   `useFindManyRecords({ objectNameSingular: CoreObjectNameSingular.WorkspaceMember })`, сопоставить
