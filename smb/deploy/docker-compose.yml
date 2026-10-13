@@ -21,6 +21,9 @@ x-app-environment: &app-environment
 
   IS_MULTIWORKSPACE_ENABLED: ${IS_MULTIWORKSPACE_ENABLED:-true}
   DEFAULT_SUBDOMAIN: ${DEFAULT_SUBDOMAIN:-app}
+  # Core default, passed through so the owner can decide it per server: see
+  # docs/ops/bitrix-app.md, "Автоматическое создание компании".
+  IS_WORKSPACE_CREATION_LIMITED_TO_SERVER_ADMINS: ${IS_WORKSPACE_CREATION_LIMITED_TO_SERVER_ADMINS:-true}
 
   STORAGE_TYPE: ${STORAGE_TYPE:-local}
   STORAGE_S3_REGION: ${STORAGE_S3_REGION:-}
