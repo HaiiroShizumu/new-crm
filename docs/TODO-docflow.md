@@ -80,10 +80,10 @@ cd ../.. && npx jest packages/twenty-server/src/modules/smb-bitrix --config=pack
   `getAppPath(AppPath.RecordShowPage, { objectNameSingular: 'workflow', objectRecordId: process.workflowId })`.
   Если `isSmbEmbedded()` (`@/smb-embed/utils/isSmbEmbedded`) возвращает `true`, обе кнопки не
   показывать. `docs/reports/R18.md`.
-- [ ] **H-4. Сортировка заданий.** Утилита `utils/sortSmbDocflowTasks.ts`: вход массив заданий,
+- [x] **H-4. Сортировка заданий.** Утилита `utils/sortSmbDocflowTasks.ts`: вход массив заданий,
   выход новый массив (исходный не менять), по `dueAt` по возрастанию, задания без срока в конце,
   при равенстве по `createdAt`. Тест `utils/__tests__/sortSmbDocflowTasks.test.ts`: со сроком и
-  без, равные сроки, пустой массив, исходный массив не изменён.
+  без, равные сроки, пустой массив, исходный массив не изменён. `docs/reports/R19.md`.
 - [ ] **H-5. Карточки «Ждут вас».** Новый компонент `components/SmbDocflowTaskCard.tsx`: название
   задания, название процесса (`task.workflowRunName`), срок (`formatDate(task.dueAt, 'dd.MM.yyyy')`
   из `~/utils/date-utils`, если срок есть), красная метка «Просрочено» по `isSmbDocflowTaskOverdue`.

@@ -9,6 +9,16 @@
 
 ---
 
+## Запись 22 — 2026-10-13 (Hermes, H-4: сортировка заданий)
+
+**Сделано:** H-4 — `utils/sortSmbDocflowTasks.ts` (новый массив, `dueAt` по возрастанию, без срока в конце, при равенстве `createdAt`; сравнение через `Date`, а не строк) и тест из 6 проверок. Отчёт — `docs/reports/R19.md`.
+
+**Подтверждено:** oxfmt, oxlint 0/0 (60 файлов), jest по модулю 5 сьютов / 27 тестов — зелёные, выводы в R19. **NOT RUN:** `tsgo` по пакету (в конце блока H-9).
+
+**Открыто:** H-5…H-19; подключение сортировки к списку — H-6.
+
+---
+
 ## Запись 21 — 2026-10-13 (Hermes, H-3: кнопки «Создать» / «Изменить»)
 
 **Сделано:** H-3 — «Создать» (`<Link>` → `/objects/workflows`) над списком процессов и «Изменить» (`<Link>` → `getAppPath(AppPath.RecordShowPage, { objectNameSingular: 'workflow', objectRecordId })`) в `SmbDocflowProcessPreview`; обе скрыты при `isSmbEmbedded()`. Отчёт — `docs/reports/R18.md`.
