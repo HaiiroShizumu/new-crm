@@ -233,6 +233,15 @@
 - [ ] **X-3** Бэкап по компаниям и проверочное восстановление с замером времени (включая схему `smb` — беседы, уведомления, привязки Б24).
 - [ ] **X-4** Регламент обновления N серверов: по одному, с проверкой health между ними.
 - [ ] **X-5** Перенос компании между серверами: дамп схемы компании + строки `smb.*` по `workspaceId` + смена CNAME. Сначала как документированная ручная процедура.
+- [ ] **X-6** Проверить новый `smb/deploy/Caddyfile` (R13; синтаксис запуском не проверялся):
+  `docker run --rm -e ACME_EMAIL=a@example.ru -e CRM_PROD_HOSTS=crm.example.ru -e CRM_STAGING_HOSTS=stage.example.ru -e STAGING_BASIC_AUTH_HASH='$2a$14$x' -v "$PWD/smb/deploy/Caddyfile:/etc/caddy/Caddyfile:ro" caddy:2 caddy validate --config /etc/caddy/Caddyfile`.
+  Готово: `Valid configuration`.
+- [ ] **X-7** На собранном образе за Caddy: `curl -sI -H 'Accept-Encoding: zstd, gzip' https://<host>/assets/<чанк>.js`
+  отдаёт `cache-control: public, max-age=31536000, immutable` и `content-encoding`; у `/` остаётся `no-store`.
+- [ ] **X-8** Переписать `docs/ops/deploy.md` под схему «корень + сабдомены компаний» (в файле стоит пометка, что описание устарело).
+- [ ] **X-9** S3: MinIO рядом со стеком, `STORAGE_TYPE=s3`, загрузка и скачивание вложения, затем `STORAGE_S3_PRESIGNED_URL_ENABLED=true`.
+- [ ] **X-10** Серверные каталоги переводов: страницы канала Б24 показывают идентификаторы сообщений вместо текста (R13 «Расхождения»).
+- [ ] **X-11** Девять ошибок типов `tsgo` в `smb-absences`, `smb-feed`, `smb-org-structure` (R11 «Расхождения»).
 
 ---
 
