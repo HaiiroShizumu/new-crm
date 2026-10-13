@@ -51,13 +51,12 @@ npx nx run twenty-front:graphql:generate      # after GraphQL schema changes (--
 
 ## Форк
 
-**Общая картина (два репозитория, план, карта отчётов, статус) — `../DIRECTIVE.md`, читать первой.**
+**Общая картина (цель, устройство, что сделано, карта документов) — `docs/README.md`, читать первой. Очередь работ — `TODO.md`.**
 
 Правила форка Twenty (база и порядок обновления — `docs/arch/UPSTREAM_BASE.md`, реестр правок — `docs/PATCHES.md`):
 
-- Рабочий каталог один: этот (`/workspace/twenty-core` в контейнере hermes, на Mac —
-  `~/SandBox/hermes/workspace/twenty-core`). Клон `~/SandBox/twenty-rebuild/twenty-core` разошёлся с ним;
-  его документы, номера ADR и реестра сюда не применять (`../DIRECTIVE.md` §2).
+- Рабочее дерево одно: этот репозиторий. Локально команды запускаются в контейнере hermes
+  (`/workspace/twenty-core`), см. `docs/dev/local-env.md`.
 - Новый код — в наших каталогах: `docs/`, `scripts/`, `smb/`, `apps/`, `packages/smb-*`,
   `.claude/`, `.cursor/`, `.github/workflows/fork-`, для визуала —
   `packages/twenty-front/src/modules/smb-*` (M2, решение владельца 2026-10-09), для серверной
@@ -73,4 +72,5 @@ npx nx run twenty-front:graphql:generate      # after GraphQL schema changes (--
   `node_modules` собраны под linux-arm64: `yarn`, `jest`, `oxlint`, `nx` запускать в контейнере, не на Mac.
 - Не коммитить `locales/*.po` и `locales/generated/*`, если задача не про переводы.
 - Обновление с upstream — только по регламенту `docs/arch/UPSTREAM_BASE.md` (ветка `update/upstream-<тег>`, конфликты разрешаются только по реестру `docs/PATCHES.md`).
-- Каждую завершённую задачу — отчётом в `docs/reports/` (Сделано / Подтверждено / NOT RUN / Расхождения / Вопросы) + записью в `docs/CONTEXT-LOG.md`.
+- Завершённую задачу отметить в `TODO.md`; если изменилось состояние продукта — поправить `docs/README.md` §4.
+  Что сделано, что проверено запуском и что `NOT RUN` — в сообщении коммита. Отдельные файлы отчётов не заводить.

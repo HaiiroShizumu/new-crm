@@ -1,7 +1,7 @@
 # ADR-007: Единый шов (smb-server / smb-front)
 
 **Статус:** Предложено (утверждение за владельцем)
-**Правка 2026-10-12 (вторая):** по итогам ревизии место P-002 перенесено из `modules.module.ts` в `engine/core-modules/core-engine.module.ts` — только это дерево грузят сервер, воркер и CLI, и по нему собирается схема `/graphql` ([ADR-013](ADR-013-fork-server-foundation.md) п.1, `docs/reports/R07.md`). Число швов не изменилось. Прежняя правка: прототип Discovery (п.«Риск») прогнан, место P-002 подтверждено — `docs/reports/S-A2.md`; серверная половина размещения закрыта на **M2** (решение владельца, TODO M-1).
+**Правка 2026-10-12 (вторая):** по итогам ревизии место P-002 перенесено из `modules.module.ts` в `engine/core-modules/core-engine.module.ts` — только это дерево грузят сервер, воркер и CLI, и по нему собирается схема `/graphql` ([ADR-013](ADR-013-fork-server-foundation.md) п.1, отчёт R07 (история git)). Число швов не изменилось. Прежняя правка: прототип Discovery (п.«Риск») прогнан, место P-002 подтверждено — отчёт S-A2 (история git); серверная половина размещения закрыта на **M2** (решение владельца, TODO M-1).
 **Дата:** 2026-10-09
 **Основание:** `docs/arch/00-baseline-analysis.md` §1c, §1e, §1f; верификация на базе `twenty/v2.45.6` (`docs/arch/02-verification-at-base.md`); правило форка в `docs/PATCHES.md`
 **Связанные:** [ADR-001](ADR-001-module-mechanism.md) (гибрид Apps + швы), [ADR-002](ADR-002-record-conversations.md) (права в шве), [ADR-003](ADR-003-business-processes.md) (хуки задач), [ADR-005](ADR-005-visual-layer.md) (brand.css)
@@ -128,7 +128,7 @@ ui-preferences, форковые navigation), в перенос не вошли.
 
 | ID | Файл | Что изменено | Статус |
 |---|---|---|---|
-| **P-002** | `packages/twenty-server/src/engine/core-modules/core-engine.module.ts` | импорт `SmbServerModule` + строка в `imports` — **2 строки** | **реализован 2026-10-12**: прототип подтвердил кандидата A (`modules.module.ts`, `docs/reports/S-A2.md`), затем по ADR-013 п.1 перенесён в `CoreEngineModule` (дерево сервера/воркера/CLI и схемы `/graphql`), повторный прогон A2 — хук срабатывает; M1/M2 — M2 |
+| **P-002** | `packages/twenty-server/src/engine/core-modules/core-engine.module.ts` | импорт `SmbServerModule` + строка в `imports` — **2 строки** | **реализован 2026-10-12**: прототип подтвердил кандидата A (`modules.module.ts`, отчёт S-A2 (история git)), затем по ADR-013 п.1 перенесён в `CoreEngineModule` (дерево сервера/воркера/CLI и схемы `/graphql`), повторный прогон A2 — хук срабатывает; M1/M2 — M2 |
 | **P-003** | `packages/twenty-front/src/index.tsx` | импорт `@/smb-skin/styles/smb-skin.css` (одна строка) | **реализован** |
 | **P-013** | `modules/app/components/SharedAppProviders.tsx` | импорт + монтирование `<SmbSkinEntry />` | **реализован** (второй шов фронта, допущен владельцем) |
 
@@ -149,7 +149,7 @@ ui-preferences, форковые navigation), в перенос не вошли.
 3. `updateOne` task через GraphQL — в логе сервера должна появиться строка stub.
 4. Если Discovery **не** видит хук — перенести шов в `workspace-query-hook.module.ts` (кандидат B) и повторить; зафиксировать рабочий вариант в P-002.
 
-Статус прогона: **ПРОГОНАН 2026-10-12** — отчёт `docs/reports/S-A2.md`. Кандидат A подтверждён: `WorkspaceQueryHookExplorer` видит провайдер из `packages/twenty-server/src/modules/smb-core/`, в логе сервера `LOG [SmbTaskUpdateOnePreHook] smb stub: task.updateOne workspace=20202020-1c25-4d02-bf25-6aeccf7ea419`. Кандидат B не понадобился; замер M1/M2 → **M2** (правок ядра 4 → 1).
+Статус прогона: **ПРОГОНАН 2026-10-12** — отчёт отчёт S-A2 (история git). Кандидат A подтверждён: `WorkspaceQueryHookExplorer` видит провайдер из `packages/twenty-server/src/modules/smb-core/`, в логе сервера `LOG [SmbTaskUpdateOnePreHook] smb stub: task.updateOne workspace=20202020-1c25-4d02-bf25-6aeccf7ea419`. Кандидат B не понадобился; замер M1/M2 → **M2** (правок ядра 4 → 1).
 
 ## Что нужно проверить прототипом
 

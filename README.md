@@ -1,3 +1,4 @@
+> **Форк KeySpace CRM** (CRM для МСБ с каналом Битрикс24 на базе Twenty v2.45.6): цель, устройство, установка и статус — [docs/README.md](docs/README.md).
 <p align="center">
   <a href="https://www.twenty.com">
     <img src="./packages/twenty-website/public/images/core/logo.svg" width="100px" alt="Twenty logo" />

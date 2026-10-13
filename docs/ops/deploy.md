@@ -1,17 +1,19 @@
 # Деплой форка (ходячий скелет)
 
-> **Устарело частично (R05, 2026-10-12):** compose и Caddyfile переведены на схему «корень + сабдомены
-> компаний», хосты задаются окружением Caddy (`CRM_PROD_HOSTS`, `CRM_STAGING_HOSTS`, `ACME_EMAIL`,
-> `STAGING_BASIC_AUTH_HASH`), `SERVER_URL` теперь корень, а не `app.`-хост. Таблица ниже и раздел Caddy
-> описывают прежнюю схему с одним хостом; переписать по задаче T7 из `docs/TODO.md`.
+Конвейер: **коммит в `main` → Fork CI → образ в GHCR → деплой по SSH → (smoke)**.
+Один образ на staging и prod; различие только в `.env` и томах. На сервере репозиторий не
+собирается: нужны только файлы из `smb/deploy/` и доступ к образу.
 
-Конвейер: **коммит → Fork CI → образ GHCR → SSH deploy → (smoke)**.  
-Один образ на staging и prod; различие только в `.env` и томах.
+Схема адресов — «корень + сабдомены компаний». `SERVER_URL` это корень инстанса
+(`https://crm.example.ru`), вход идёт через `app.<корень>` (`DEFAULT_SUBDOMAIN`), каждая компания
+живёт на `<сабдомен>.<корень>`.
 
-| Env | URL | Порт на loopback | Compose dir |
-|-----|-----|------------------|-------------|
-| staging | `https://dev.crm-systems-ai.ru` | `127.0.0.1:3001` | `/opt/crm/staging` |
-| prod | `https://app.crm-systems-ai.ru` | `127.0.0.1:3000` | `/opt/crm/prod` |
+| Env | Корень (пример) | Порт на loopback | Каталог compose |
+|-----|-----------------|------------------|-----------------|
+| staging | `https://stage.example.ru` | `127.0.0.1:3001` | `/opt/crm/staging` |
+| prod | `https://crm.example.ru` | `127.0.0.1:3000` | `/opt/crm/prod` |
+
+Ни один шаг этого документа на сервере не выполнялся (раздел «NOT RUN» в конце).
 
 **Registry:** `ghcr.io/haiiroshizumu/new-crm`  
 **Теги:** `sha-<7>`, подвижный `staging`, `v2.45.6-smb.N`. Тег `latest` запрещён.
@@ -113,12 +115,12 @@ sudo -u deploy bash -c '
 
 ```bash
 sudo -u deploy cp /path/to/repo/smb/deploy/.env.example /opt/crm/staging/.env
-# заполнить TAG, SERVER_URL=https://dev.crm-systems-ai.ru, HOST_PORT=3001,
+# заполнить TAG, SERVER_URL=https://<корень staging>, HOST_PORT=3001,
 # ENCRYPTION_KEY, PG_DATABASE_PASSWORD из .secrets
 chmod 600 /opt/crm/staging/.env
 
 # prod:
-# SERVER_URL=https://app.crm-systems-ai.ru  HOST_PORT=3000  CRM_ENV=prod
+# SERVER_URL=https://<корень prod>  HOST_PORT=3000  CRM_ENV=prod
 chmod 600 /opt/crm/prod/.env
 ```
 
@@ -126,13 +128,29 @@ chmod 600 /opt/crm/prod/.env
 
 ### 6. Caddy
 
+Хосты в `Caddyfile` не прописаны, они приходят из окружения процесса caddy
+(`EnvironmentFile=/opt/crm/caddy.env` в unit-файле):
+
 ```bash
-# установить caddy; положить /opt/crm/Caddyfile
-caddy hash-password   # вставить хеш вместо STAGING_BASIC_AUTH_HASH
-# systemctl enable --now caddy  (или caddy run --config /opt/crm/Caddyfile)
+ACME_EMAIL=admin@example.ru
+CRM_PROD_HOSTS=crm.example.ru, app.crm.example.ru, acme.crm.example.ru
+CRM_STAGING_HOSTS=stage.example.ru, app.stage.example.ru
+STAGING_BASIC_AUTH_HASH=<вывод caddy hash-password>
 ```
 
-DNS A/AAAA на сервер — **когда** освободите хост от старого проекта (см. cutover ниже).
+С явным списком каждый хост получает свой сертификат по HTTP-01, плагины Caddy не нужны; новая
+компания это ещё один хост в списке и `systemctl reload caddy`.
+
+**Автоматическое создание компаний** (установка приложения Б24, `docs/README.md` §5) с явным
+списком не работает: сабдомен появляется сам, а сертификата на него нет. Для него нужны:
+
+- DNS-запись `*.<корень>` на сервер;
+- в списке хостов `crm.example.ru, *.crm.example.ru` и блок `tls { dns <провайдер> }`: wildcard
+  выдаётся только по DNS-01, это сборка Caddy с модулем DNS-провайдера;
+- переменные из `docs/ops/bitrix-app.md`, раздел «Автоматическое создание компании».
+
+Basic auth на staging блокирует и фрейм Б24, и входящие запросы портала: для проверок канала его
+надо снять с проверяемого хоста.
 
 ### 7. Pull из GHCR
 
@@ -192,9 +210,9 @@ PREV=$(cat /opt/crm/prod/.deploy/previous_tag)
 
 ---
 
-## Cutover `dev.crm-systems-ai.ru` (когда освободите хост)
+## Переключение домена со старого проекта
 
-Сейчас на домене крутится **старый** проект — не переключать, пока не готовы.
+Если на домене ещё работает старый проект — не переключать, пока не готовы.
 
 1. Зафиксировать дамп/бэкап старого стека.
 2. Остановить старые контейнеры / освободить :80/:443.
@@ -243,8 +261,9 @@ PREV=$(cat /opt/crm/prod/.deploy/previous_tag)
 
 | Что | Почему |
 |-----|--------|
-| Живой deploy на `dev.crm-systems-ai.ru` | На домене ещё старый проект; cutover отложен |
-| Prod на `app.crm-systems-ai.ru` | Нет cutover / DNS / секретов GHA |
+| Любой деплой на сервер, staging или prod | Нет сервера с доменом, DNS и секретов GHA |
+| `caddy validate` для `smb/deploy/Caddyfile` | Синтаксис запуском не проверялся |
+| Wildcard-сертификат и автоматическое создание компаний | Нужны DNS-провайдер с API и портал Б24 |
 | Smoke Playwright против staging | `SMOKE_STAGING_ENABLED` выключен до cutover |
 | Замер времени/пика RSS сборки на GHA | Нет ещё успешного `fork-release` build в этом скелете |
 | Проверочный restore + RTO | См. `backup-restore.md` |
