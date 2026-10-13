@@ -1,12 +1,52 @@
+import { styled } from '@linaria/react';
 import { useLingui } from '@lingui/react/macro';
 import { isDefined } from 'twenty-shared/utils';
 import { useToast } from 'twenty-ui/components';
+import { themeCssVariables } from 'twenty-ui/theme';
 
 import { SmbDocflowEmptyState } from '@/smb-docflow/components/SmbDocflowEmptyState';
 import { SmbDocflowForm } from '@/smb-docflow/components/SmbDocflowForm';
 import { SmbDocflowPreviewTitle } from '@/smb-docflow/components/SmbDocflowPreviewTitle';
 import { useAnswerSmbDocflowForm } from '@/smb-docflow/hooks/useAnswerSmbDocflowForm';
+import { useSmbDocflowRunState } from '@/smb-docflow/hooks/useSmbDocflowRunState';
 import { type SmbDocflowTaskWithOwnership } from '@/smb-docflow/types/SmbDocflowTaskWithOwnership';
+import { getSmbDocflowRunTimeline } from '@/smb-docflow/utils/getSmbDocflowRunTimeline';
+
+const StyledTimelineTitle = styled.h3`
+  color: ${themeCssVariables.font.color.tertiary};
+  font-size: ${themeCssVariables.font.size.sm};
+  font-weight: ${themeCssVariables.font.weight.medium};
+  margin: 0;
+`;
+
+const StyledTimeline = styled.ol`
+  display: flex;
+  flex-direction: column;
+  gap: ${themeCssVariables.spacing[2]};
+  list-style: none;
+  margin: 0;
+  padding: 0;
+`;
+
+const StyledTimelineStep = styled.li`
+  align-items: baseline;
+  display: flex;
+  font-size: ${themeCssVariables.font.size.sm};
+  gap: ${themeCssVariables.spacing[3]};
+  justify-content: space-between;
+`;
+
+const StyledStepName = styled.span`
+  color: ${themeCssVariables.font.color.primary};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const StyledStepStatus = styled.span`
+  color: ${themeCssVariables.font.color.tertiary};
+  flex-shrink: 0;
+`;
 
 type SmbDocflowTaskPreviewProps = {
   task: SmbDocflowTaskWithOwnership;
@@ -20,6 +60,8 @@ export const SmbDocflowTaskPreview = ({
   const { t } = useLingui();
   const { enqueueToast } = useToast();
   const { answerSmbDocflowForm } = useAnswerSmbDocflowForm();
+  const runState = useSmbDocflowRunState(task.workflowRunId);
+  const timeline = getSmbDocflowRunTimeline(runState);
 
   const { threadId } = task;
 
@@ -61,6 +103,19 @@ export const SmbDocflowTaskPreview = ({
         />
       ) : (
         <SmbDocflowEmptyState message={t`Задание ещё готовится.`} />
+      )}
+      {timeline.length > 0 && (
+        <section aria-label={t`Шаги процесса`}>
+          <StyledTimelineTitle>{t`Шаги процесса`}</StyledTimelineTitle>
+          <StyledTimeline>
+            {timeline.map((step) => (
+              <StyledTimelineStep key={step.stepId}>
+                <StyledStepName>{step.name}</StyledStepName>
+                <StyledStepStatus>{step.status}</StyledStepStatus>
+              </StyledTimelineStep>
+            ))}
+          </StyledTimeline>
+        </section>
       )}
     </>
   );

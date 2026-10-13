@@ -9,6 +9,16 @@
 
 ---
 
+## Запись 26 — 2026-10-13 (Hermes, H-8: шаги процесса в предпросмотре)
+
+**Сделано:** H-8 — `utils/getSmbDocflowRunTimeline.ts` + тест (3 проверки), `hooks/useSmbDocflowRunState.ts` (`useFindOneRecord` по `WorkflowRun` с полями `id/status/state` + `workflowRunSchema.safeParse`, при неуспехе `undefined`, штатный `useWorkflowRun` не используется), блок «Шаги процесса» под формой в `SmbDocflowTaskPreview`. Отчёт — `docs/reports/R23.md`.
+
+**Подтверждено:** oxfmt, oxlint 0/0 (64 файла), jest по модулю 6 сьютов / 30 тестов — зелёные, выводы в R23. **NOT RUN:** браузер (V-2), `tsgo` по пакету (в конце блока H-9).
+
+**Открыто:** H-9 (последняя задача блока, после неё `tsgo` по `twenty-front`), затем H-10…H-19.
+
+---
+
 ## Запись 25 — 2026-10-13 (Hermes, H-7: панель предпросмотра)
 
 **Сделано:** H-7 — `SmbDocflowSplitLayout`: проп `onClose`, кнопка `LightIconButton` + `IconX` (`aria-label` «Закрыть») справа вверху, анимация `transition: width calc(${themeCssVariables.animation.duration.normal} * 1s)` по образцу `SidePanelForDesktop.tsx:34-48` (панель смонтирована всегда, закрыта — `width: 0`), на ширине < 900px `position: absolute; inset: 0` поверх списка. `onClose` передан в обе вкладки. Отчёт — `docs/reports/R22.md`.

@@ -103,7 +103,7 @@ cd ../.. && npx jest packages/twenty-server/src/modules/smb-bitrix --config=pack
   `side-panel/components/SidePanelForDesktop.tsx:34-48` (тот файл только читать). На ширине меньше
   900px (`@media (max-width: 900px)`) панель `position: absolute; inset: 0` поверх списка. В обеих
   вкладках передать `onClose`, который сбрасывает выбранное. `docs/reports/R22.md`.
-- [ ] **H-8. Шаги процесса в предпросмотре задания.**
+- [x] **H-8. Шаги процесса в предпросмотре задания.**
   1. Утилита `utils/getSmbDocflowRunTimeline.ts`: вход `state` запуска (тип из `WorkflowRun['state']`),
      выход массив `{ stepId, name, status }` в порядке `state.flow.steps`; статус из
      `state.stepInfos[step.id]?.status`, если его нет — `'NOT_STARTED'`. Тест по образцу
@@ -114,6 +114,7 @@ cd ../.. && npx jest packages/twenty-server/src/modules/smb-bitrix --config=pack
      Штатный `useWorkflowRun` не использовать: он бросает исключение на запуске с непривычным
      состоянием (R15).
   3. Под формой в `SmbDocflowTaskPreview.tsx` показать список шагов: название и статус.
+     `docs/reports/R23.md`.
 - [ ] **H-9. Тесты формы.** `components/__tests__/SmbDocflowForm.test.tsx`: (1) при пустом
   обязательном поле `onSubmit` возвращает его, и на экране появляется текст «Заполните: …» с
   подписью поля; (2) у обязательного поля в подписи есть звёздочка; (3) поле с `settings.smbRole` не
