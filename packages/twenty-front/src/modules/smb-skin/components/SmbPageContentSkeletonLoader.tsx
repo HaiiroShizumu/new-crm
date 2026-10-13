@@ -1,8 +1,7 @@
 import { styled } from '@linaria/react';
-import Skeleton from 'react-loading-skeleton';
+import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import { themeCssVariables } from 'twenty-ui/theme';
 
-import { SmbSkeletonTheme } from '@/smb-skin/components/SmbSkeletonTheme';
 import { PageCardHeader } from '@/ui/layout/page/components/PageCardHeader';
 import { PageCardLayout } from '@/ui/layout/page/components/PageCardLayout';
 
@@ -68,7 +67,7 @@ const StyledCell = styled.div<{ width: number }>`
 export const SmbPageContentSkeletonLoader = () => (
   <PageCardLayout
     header={
-      <SmbSkeletonTheme surface="canvas" borderRadius={8}>
+      <SkeletonTheme borderRadius={8}>
         <PageCardHeader
           title={<Skeleton width={160} height={22} />}
           actionButton={
@@ -78,11 +77,11 @@ export const SmbPageContentSkeletonLoader = () => (
             </StyledActions>
           }
         />
-      </SmbSkeletonTheme>
+      </SkeletonTheme>
     }
     showInformationBanner={false}
   >
-    <SmbSkeletonTheme surface="glass" borderRadius={6}>
+    <SkeletonTheme borderRadius={6}>
       <StyledViewBar>
         <Skeleton width={128} height={14} />
         <StyledViewBarActions>
@@ -116,6 +115,6 @@ export const SmbPageContentSkeletonLoader = () => (
           </StyledRow>
         ))}
       </StyledTable>
-    </SmbSkeletonTheme>
+    </SkeletonTheme>
   </PageCardLayout>
 );

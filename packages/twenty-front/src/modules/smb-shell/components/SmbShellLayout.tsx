@@ -7,6 +7,7 @@ import { KeyboardShortcutMenu } from '@/keyboard-shortcut-menu/components/Keyboa
 import { LayoutCustomizationBar } from '@/layout-customization/components/LayoutCustomizationBar';
 import { SmbApplicationLifecycleLoaders } from '@/smb-modules/components/SmbApplicationLifecycleLoaders';
 import { AppTopBar } from '@/smb-shell/components/SmbAppTopBar';
+import { SmbChromeHeaderPortalProvider } from '@/smb-shell/components/SmbChromeHeaderPortalProvider';
 import { AppNavigationDrawer } from '@/smb-shell/navigation/components/AppNavigationDrawer';
 import { MenuSearchPalette } from '@/smb-shell/navigation/components/MenuSearchPalette';
 import { MobileNavigationBar } from '@/smb-shell/navigation/components/MobileNavigationBar';
@@ -24,7 +25,6 @@ import { useIsMobile } from 'twenty-ui/utilities';
 import { themeCssVariables } from 'twenty-ui/theme';
 
 const StyledLayout = styled.div`
-  background: ${themeCssVariables.grayScale.gray3};
   display: flex;
   flex-direction: column;
   height: calc(100dvh / var(--t-zoom, 1));
@@ -155,18 +155,16 @@ export const SmbShellLayout = () => {
                 <StyledMainContainer data-smb-main>
                   {shouldShowAppTopBar ? <AppTopBar /> : null}
                   <StyledMainContent>
-                    <AppErrorBoundary
-                      FallbackComponent={AppPageErrorFallback}
-                    >
-                      <Outlet />
+                    <AppErrorBoundary FallbackComponent={AppPageErrorFallback}>
+                      <SmbChromeHeaderPortalProvider>
+                        <Outlet />
+                      </SmbChromeHeaderPortalProvider>
                     </AppErrorBoundary>
                   </StyledMainContent>
                 </StyledMainContainer>
               </PageDragDropProvider>
             </StyledPageContainer>
-            {shouldShowMobileNavigationBar ? (
-              <MobileNavigationBar />
-            ) : null}
+            {shouldShowMobileNavigationBar ? <MobileNavigationBar /> : null}
           </AppErrorBoundary>
         </StyledLayout>
       </FileUploadProvider>

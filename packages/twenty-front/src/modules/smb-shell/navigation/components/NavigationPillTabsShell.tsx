@@ -39,11 +39,7 @@ export const StyledNavigationPillTab = styled.button`
   white-space: nowrap;
 
   &:hover:not([aria-current='true']):not([aria-disabled='true']) {
-    background: color-mix(
-      in srgb,
-      var(--color-surface-solid) 28%,
-      transparent
-    );
+    background: color-mix(in srgb, var(--color-surface-solid) 28%, transparent);
     color: var(--color-text);
   }
 

@@ -85,9 +85,7 @@ const StyledIconButton = styled.button<{ isActive: boolean }>`
 const StyledIconGlyph = styled.span<{ isActive: boolean }>`
   align-items: center;
   background: ${({ isActive }) =>
-    isActive
-      ? themeCssVariables.background.transparent.blue
-      : 'transparent'};
+    isActive ? themeCssVariables.background.transparent.blue : 'transparent'};
   border-radius: ${themeCssVariables.border.radius.xl};
   display: inline-flex;
   height: ${ICON_RAIL_GLYPH_SIZE_PX}px;
@@ -176,9 +174,10 @@ export const TwoLevelNavigationRail = () => {
   const isLayoutCustomizationModeEnabled = useAtomStateValue(
     isLayoutCustomizationModeEnabledState,
   );
-  const [isSecondaryNavigationSidebarOpen, setIsSecondaryNavigationSidebarOpen] = useAtomState(
-    isSecondaryNavigationSidebarOpenState,
-  );
+  const [
+    isSecondaryNavigationSidebarOpen,
+    setIsSecondaryNavigationSidebarOpen,
+  ] = useAtomState(isSecondaryNavigationSidebarOpenState);
 
   return (
     <StyledRail data-two-level-nav>
@@ -211,10 +210,7 @@ export const TwoLevelNavigationRail = () => {
               }}
             >
               <StyledIconGlyph data-icon-glyph isActive={isActive}>
-                <Icon
-                  size={theme.icon.size.xl}
-                  stroke={theme.icon.stroke.lg}
-                />
+                <Icon size={theme.icon.size.xl} stroke={theme.icon.stroke.lg} />
               </StyledIconGlyph>
               <StyledIconLabel>{label}</StyledIconLabel>
             </StyledIconButton>

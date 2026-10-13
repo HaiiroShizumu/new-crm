@@ -126,14 +126,10 @@ const StyledModeIcon = styled.span<{ iconsOnly: boolean }>`
   display: flex;
   flex-shrink: 0;
   height: ${({ iconsOnly }) =>
-    iconsOnly
-      ? `${LARGE_MODE_ICON_SIZE_PX}px`
-      : themeCssVariables.spacing[4]};
+    iconsOnly ? `${LARGE_MODE_ICON_SIZE_PX}px` : themeCssVariables.spacing[4]};
   justify-content: center;
   width: ${({ iconsOnly }) =>
-    iconsOnly
-      ? `${LARGE_MODE_ICON_SIZE_PX}px`
-      : themeCssVariables.spacing[4]};
+    iconsOnly ? `${LARGE_MODE_ICON_SIZE_PX}px` : themeCssVariables.spacing[4]};
 `;
 
 const StyledModeLabelBase = styled.span`
@@ -186,9 +182,7 @@ export const MainNavigationDrawerModeSwitcher = () => {
           <Tooltip
             key={mode}
             content={
-              isDisabled
-                ? t`Finish editing the layout to switch`
-                : label
+              isDisabled ? t`Finish editing the layout to switch` : label
             }
             disabled={!shouldShowTooltips && !isDisabled}
             delay={TooltipDelay.noDelay}

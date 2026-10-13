@@ -19,9 +19,7 @@ const StyledList = styled.div`
 const StyledModeButton = styled.button<{ isActive: boolean }>`
   align-items: center;
   background: ${({ isActive }) =>
-    isActive
-      ? themeCssVariables.background.transparent.light
-      : 'transparent'};
+    isActive ? themeCssVariables.background.transparent.light : 'transparent'};
   border: none;
   border-radius: ${themeCssVariables.border.radius.md};
   color: ${({ isActive }) =>

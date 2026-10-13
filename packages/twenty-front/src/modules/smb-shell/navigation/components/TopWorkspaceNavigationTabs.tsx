@@ -42,7 +42,8 @@ export const TopWorkspaceNavigationTabs = ({
   const isInitialObjectViewEnabled = useIsFeatureEnabled(
     FeatureFlagKey.IS_INITIAL_OBJECT_VIEW_ENABLED,
   );
-  const { activeNavigationMenuItemIds } = useIdentifyActiveNavigationMenuItems();
+  const { activeNavigationMenuItemIds } =
+    useIdentifyActiveNavigationMenuItems();
   const setLastClickedNavigationMenuItemId = useSetAtomState(
     lastClickedNavigationMenuItemIdState,
   );

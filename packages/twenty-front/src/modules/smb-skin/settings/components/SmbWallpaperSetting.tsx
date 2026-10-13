@@ -24,33 +24,37 @@ const StyledWallpaperSetting = styled.div`
 
 const StyledPresetGrid = styled.div`
   display: grid;
-  gap: ${themeCssVariables.spacing[1]};
+  gap: ${themeCssVariables.spacing[2]};
   grid-template-columns: repeat(5, minmax(0, 1fr));
 
   @media (max-width: 720px) {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 `;
 
 const StyledPresetCard = styled.button`
+  aspect-ratio: 16 / 10;
   background-color: ${themeCssVariables.background.tertiary};
   background-position: center;
   background-size: cover;
   border: 1px solid ${themeCssVariables.border.color.medium};
-  border-radius: ${themeCssVariables.border.radius.sm};
+  border-radius: ${themeCssVariables.border.radius.md};
   cursor: pointer;
-  height: 36px;
   padding: 0;
-  transition: border-color 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
   width: 100%;
 
   &:hover {
     border-color: ${themeCssVariables.border.color.blue};
+    transform: translateY(-1px);
   }
 
   &[aria-pressed='true'] {
     border-color: ${themeCssVariables.color.blue};
-    box-shadow: inset 0 0 0 1px ${themeCssVariables.color.blue};
+    box-shadow: 0 0 0 2px ${themeCssVariables.color.blue};
   }
 `;
 

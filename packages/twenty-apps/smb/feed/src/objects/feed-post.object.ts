@@ -1,0 +1,100 @@
+import { defineObject, FieldType } from 'twenty-sdk/define';
+
+import {
+  FEED_POST_OBJECT_UNIVERSAL_IDENTIFIER,
+  FEED_POST_TITLE_UNIVERSAL_IDENTIFIER,
+  FEED_POST_TEXT_UNIVERSAL_IDENTIFIER,
+  FEED_POST_AUDIENCE_UNIVERSAL_IDENTIFIER,
+  FEED_POST_AUDIENCEDEPARTMENTIDS_UNIVERSAL_IDENTIFIER,
+  FEED_POST_ISPINNED_UNIVERSAL_IDENTIFIER,
+  FEED_POST_ISIMPORTANT_UNIVERSAL_IDENTIFIER,
+  FEED_POST_PUBLISHEDAT_UNIVERSAL_IDENTIFIER,
+} from 'src/universal-identifiers';
+
+export default defineObject({
+  universalIdentifier: FEED_POST_OBJECT_UNIVERSAL_IDENTIFIER,
+  nameSingular: 'feedPost',
+  namePlural: 'feedPosts',
+  labelSingular: 'Пост',
+  labelPlural: 'Посты',
+  description: 'Новость компании',
+  icon: 'IconNews',
+  labelIdentifierFieldMetadataUniversalIdentifier:
+    FEED_POST_TITLE_UNIVERSAL_IDENTIFIER,
+  fields: [
+    {
+      universalIdentifier: FEED_POST_TITLE_UNIVERSAL_IDENTIFIER,
+      type: FieldType.TEXT,
+      label: 'Заголовок',
+      icon: 'IconAbc',
+      name: 'title',
+    },
+    {
+      universalIdentifier: FEED_POST_TEXT_UNIVERSAL_IDENTIFIER,
+      type: FieldType.TEXT,
+      label: 'Текст',
+      icon: 'IconAlignLeft',
+      name: 'text',
+      isNullable: true,
+      defaultValue: null,
+    },
+    {
+      universalIdentifier: FEED_POST_AUDIENCE_UNIVERSAL_IDENTIFIER,
+      type: FieldType.SELECT,
+      label: 'Аудитория',
+      icon: 'IconUsers',
+      name: 'audience',
+      defaultValue: 'COMPANY',
+      options: [
+        {
+          id: 'b81511bf-bb6a-4430-bce9-8ce11025a187',
+          value: 'COMPANY',
+          label: 'Вся компания',
+          position: 0,
+          color: 'blue',
+        },
+        {
+          id: 'cd528deb-31c6-4be5-858e-f4d800c47e2b',
+          value: 'DEPARTMENTS',
+          label: 'Отделы',
+          position: 1,
+          color: 'purple',
+        },
+      ],
+    },
+    {
+      universalIdentifier: FEED_POST_AUDIENCEDEPARTMENTIDS_UNIVERSAL_IDENTIFIER,
+      type: FieldType.RAW_JSON,
+      label: 'Отделы аудитории',
+      icon: 'IconSitemap',
+      name: 'audienceDepartmentIds',
+      isNullable: true,
+      defaultValue: null,
+    },
+    {
+      universalIdentifier: FEED_POST_ISPINNED_UNIVERSAL_IDENTIFIER,
+      type: FieldType.BOOLEAN,
+      label: 'Закреплён',
+      icon: 'IconPin',
+      name: 'isPinned',
+      defaultValue: false,
+    },
+    {
+      universalIdentifier: FEED_POST_ISIMPORTANT_UNIVERSAL_IDENTIFIER,
+      type: FieldType.BOOLEAN,
+      label: 'Важное: требуется ознакомление',
+      icon: 'IconAlertTriangle',
+      name: 'isImportant',
+      defaultValue: false,
+    },
+    {
+      universalIdentifier: FEED_POST_PUBLISHEDAT_UNIVERSAL_IDENTIFIER,
+      type: FieldType.DATE_TIME,
+      label: 'Опубликован',
+      icon: 'IconCalendar',
+      name: 'publishedAt',
+      isNullable: true,
+      defaultValue: null,
+    },
+  ],
+});

@@ -7,8 +7,5 @@ export const SMB_ROOT_CSS_VARIABLES = [
   '--app-bg-blur',
   '--color-on-bg',
   '--color-on-bg-muted',
-  '--color-text',
-  '--color-text-muted',
-  '--chrome-text-shadow',
   '--smb-wallpaper-average',
 ] as const;

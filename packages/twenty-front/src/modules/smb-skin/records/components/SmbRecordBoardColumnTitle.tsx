@@ -20,7 +20,10 @@ type SmbRecordBoardColumnHeaderCardProps = {
 };
 
 const StyledCard = styled.div`
-  background: var(--smb-board-column-header-bg, ${themeCssVariables.background.tertiary});
+  background: var(
+    --smb-board-column-header-bg,
+    ${themeCssVariables.background.tertiary}
+  );
   border-radius: var(--radius-lg, ${themeCssVariables.border.radius.md});
   box-sizing: border-box;
   display: flex;

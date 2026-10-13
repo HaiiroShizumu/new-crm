@@ -1,0 +1,17 @@
+# dependencies
+/node_modules
+.yarn
+
+# codegen
+generated
+
+# dev
+/dist/
+.twenty
+
+# env files
+.env*
+
+# typescript
+*.tsbuildinfo
+*.d.ts

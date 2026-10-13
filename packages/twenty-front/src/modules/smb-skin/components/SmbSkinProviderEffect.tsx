@@ -8,26 +8,16 @@ import { smbSidebarModeState } from '@/smb-skin/states/smbSidebarModeState';
 import { smbSidebarOpenState } from '@/smb-skin/states/smbSidebarOpenState';
 import { type SmbThemeMode } from '@/smb-skin/types/SmbThemeMode';
 import { applySmbThemeVars } from '@/smb-skin/utils/applySmbThemeVars';
-import { getEffectiveSmbPanelOpacity } from '@/smb-skin/utils/getEffectiveSmbPanelOpacity';
 import { getLuminanceAfterDim } from '@/smb-skin/utils/getLuminanceAfterDim';
-import { getRelativeLuminance } from '@/smb-skin/utils/getRelativeLuminance';
 import { hasSmbWallpaper } from '@/smb-skin/utils/hasSmbWallpaper';
 import { pickSmbOnBgColors } from '@/smb-skin/utils/pickSmbOnBgColors';
-import { pickSmbProgressiveGlassText } from '@/smb-skin/utils/pickSmbProgressiveGlassText';
 import { sampleSmbWallpaper } from '@/smb-skin/utils/sampleSmbWallpaper';
-import { setSmbGlassTextCssVars } from '@/smb-skin/utils/setSmbGlassTextCssVars';
 import { setSmbOnBgCssVars } from '@/smb-skin/utils/setSmbOnBgCssVars';
 import { useAtomStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomStateValue';
 
 type SmbSkinProviderEffectProps = {
   mode: SmbThemeMode;
 };
-
-// Solid canvas luminance when there is no wallpaper to sample
-const SMB_CANVAS_LUMINANCE = {
-  light: getRelativeLuminance(244, 244, 245),
-  dark: getRelativeLuminance(18, 18, 18),
-} as const;
 
 export const SmbSkinProviderEffect = ({ mode }: SmbSkinProviderEffectProps) => {
   const smbAccent = useAtomStateValue(smbAccentState);
@@ -50,21 +40,7 @@ export const SmbSkinProviderEffect = ({ mode }: SmbSkinProviderEffectProps) => {
       panelOpacity: smbPanelOpacity,
     });
 
-    const effectivePanelOpacity = getEffectiveSmbPanelOpacity(
-      mode,
-      smbPanelOpacity,
-    );
-
     if (!hasSmbWallpaper(smbBackground) || smbBackground.url === null) {
-      setSmbGlassTextCssVars(
-        root,
-        pickSmbProgressiveGlassText(
-          mode,
-          SMB_CANVAS_LUMINANCE[mode],
-          effectivePanelOpacity,
-        ),
-      );
-
       return;
     }
 
@@ -85,14 +61,6 @@ export const SmbSkinProviderEffect = ({ mode }: SmbSkinProviderEffectProps) => {
         );
 
         setSmbOnBgCssVars(root, pickSmbOnBgColors(wallpaperLuminance));
-        setSmbGlassTextCssVars(
-          root,
-          pickSmbProgressiveGlassText(
-            mode,
-            wallpaperLuminance,
-            effectivePanelOpacity,
-          ),
-        );
         root.style.setProperty(
           '--smb-wallpaper-average',
           wallpaperSample.averageColor,

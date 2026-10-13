@@ -1,35 +1,36 @@
 #!/usr/bin/env node
 /**
- * Генератор каркаса модуля форка (ADR-009, задача M-5).
+ * Генератор каркаса модуля форка (ADR-009, задача M-5) и команды модулей (M-6).
  *
  *   yarn smb:module new <key> [--display-name "Название"] [--server]
  *   yarn smb:module list
+ *   yarn smb:module disable <key> [--workspace <uuid>] [--dry-run] [--delete-data --yes]
  *
  * `new` создаёт части модуля и вставляет строки в наши реестры:
  *   app/     packages/twenty-apps/smb/<key>/                 App: объекты, поля, роли, workflows
  *   front/   packages/twenty-front/src/modules/smb-<key>/    страницы + манифест
  *            + import и строка в smb-modules/registry.ts
  *   server/  packages/twenty-server/src/modules/smb-<key>/   (флаг --server)
- *            + строка в smb-server.module.ts и запись в docs/PATCHES.md
+ *            + импорт и строка в smb-server.module.ts; манифест
+ *            (key, uuid, версия) — в smb-modules/registry.ts, он же нужен
+ *            guard'у @RequireSmbModule и проверке версии при старте (M-7)
  *
- * Правки ядра не нужны: все пути либо наши (OURS в гейте), либо покрыты
- * записью реестра, которую генератор добавляет сам для серверной части —
- * расширение OURS на сервер ещё не ревьюировал владелец (задача M-1).
+ * `disable` снимает доступ (назначения ролей App), данные не удаляет:
+ * удаление — только явным --delete-data с подтверждением (ADR-009 п.3).
  */
 import { randomUUID } from 'node:crypto';
-import {
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  writeFileSync,
-} from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import readline from 'node:readline/promises';
 import { fileURLToPath } from 'node:url';
 
-const REPO_ROOT = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  '..',
-);
+import { readServerEnv, runMetadataGraphql } from './lib/smb-api.mjs';
+
+// SMB_MODULE_ROOT — только для теста генератора (scripts/test/smb-module.test.mjs):
+// он гоняет `new` на копии каркаса реестров, а не на настоящем дереве.
+const REPO_ROOT = process.env.SMB_MODULE_ROOT
+  ? path.resolve(process.env.SMB_MODULE_ROOT)
+  : path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const FRONT_MODULES_DIR = path.join(
   REPO_ROOT,
   'packages/twenty-front/src/modules',
@@ -41,11 +42,26 @@ const SERVER_MODULES_DIR = path.join(
   'packages/twenty-server/src/modules',
 );
 const SERVER_REGISTRY = path.join(SERVER_MODULES_DIR, 'smb-server.module.ts');
+const SERVER_MANIFEST_REGISTRY = path.join(
+  SERVER_MODULES_DIR,
+  'smb-modules/registry.ts',
+);
+const SERVER_MIGRATIONS_REGISTRY = path.join(
+  SERVER_MODULES_DIR,
+  'smb-database/registry.ts',
+);
 const PATCHES = path.join(REPO_ROOT, 'docs/PATCHES.md');
+
+// Версия App по умолчанию: та же самая пишется в package.json App и в
+// серверный реестр (сверка «версия App ↔ код образа», M-7).
+const APP_VERSION = '0.1.0';
 
 const KEY_PATTERN = /^[a-z][a-z0-9-]{1,32}$/;
 const IMPORTS_MARKER = '// smb:module:imports';
 const LIST_MARKER = '// smb:module:list';
+const MANIFEST_MARKER = '// smb:module:manifests';
+const MIGRATIONS_IMPORTS_MARKER = '// smb:module:migration-imports';
+const MIGRATIONS_MARKER = '// smb:module:migrations';
 const SERVER_PATCH_PATH = 'packages/twenty-server/src/modules/smb-*';
 const APP_PATCH_PATH = 'packages/twenty-apps/smb/';
 
@@ -65,6 +81,9 @@ const pascalCase = (key) =>
 const constName = (key) =>
   `SMB_${key.replace(/-/g, '_').toUpperCase()}_MODULE_MANIFEST`;
 
+const migrationsConstName = (key) =>
+  `SMB_${key.replace(/-/g, '_').toUpperCase()}_MIGRATIONS`;
+
 const writeFile = (filePath, content) => {
   mkdirSync(path.dirname(filePath), { recursive: true });
   writeFileSync(filePath, content);
@@ -73,9 +92,12 @@ const writeFile = (filePath, content) => {
 
 const insertAfterMarker = (filePath, marker, line) => {
   const content = readFileSync(filePath, 'utf8');
-  const markerIndex = content.indexOf(marker);
+  const lines = content.split('\n');
+  // Маркер — отдельная строка файла: в комментариях те же слова встречаются
+  // в тексте, и поиск подстроки вставил бы строку в комментарий.
+  const markerLineIndex = lines.findIndex((item) => item.trim() === marker);
 
-  if (markerIndex === -1) {
+  if (markerLineIndex === -1) {
     fail(`не найден маркер '${marker}' в ${relative(filePath)}`);
   }
 
@@ -84,13 +106,8 @@ const insertAfterMarker = (filePath, marker, line) => {
     return;
   }
 
-  const lineEnd = content.indexOf('\n', markerIndex);
-  const updated =
-    content.slice(0, lineEnd + 1) +
-    `${line}\n` +
-    content.slice(lineEnd + 1);
-
-  writeFileSync(filePath, updated);
+  lines.splice(markerLineIndex + 1, 0, line);
+  writeFileSync(filePath, lines.join('\n'));
   console.log(`  * ${relative(filePath)}`);
 };
 
@@ -189,7 +206,7 @@ const appPackageJson = ({ key, displayName }) =>
   `${JSON.stringify(
     {
       name: key,
-      version: '0.1.0',
+      version: APP_VERSION,
       license: 'AGPL-3.0-only',
       engines: {
         node: '^24.5.0',
@@ -334,14 +351,35 @@ const serverModule = ({ key }) =>
   `import { Module } from '@nestjs/common';
 
 // Серверная часть модуля '${key}' (ADR-009 п.1): PRE-хуки, резолверы, REST,
-// свои таблицы, фоновые задачи. Подключение к SmbServerModule — задача M-1
-// (шов P-002, расширение OURS на сервер ждёт ревью владельца).
+// свои таблицы, фоновые задачи. Генератор уже вставил этот модуль в
+// smb-server.module.ts, а манифест (key, uuid, версию) — в
+// smb-modules/registry.ts; guard @RequireSmbModule('${key}') работает сразу.
 @Module({})
 export class Smb${pascalCase(key)}Module {}
 `;
 
+const serverMigrations = ({ key }) =>
+  `import { type SmbMigration } from 'src/modules/smb-database/types/smb-migration.type';
+
+// Таблицы модуля '${key}' в схеме smb (ADR-013 п.2). Правила:
+//   * имя — '${key}/<NNNN>-<что делает>', порядок задаёт список;
+//   * применённую миграцию не править — добавлять новую;
+//   * у каждой таблицы "workspaceId" uuid NOT NULL с
+//     REFERENCES "core"."workspace"("id") ON DELETE CASCADE;
+//   * instance-команды (@RegisteredInstanceCommand) не писать — на обновлённом
+//     сервере они не выполнятся.
+export const ${migrationsConstName(key)}: SmbMigration[] = [];
+`;
+
 const parseArgs = (argv) => {
-  const options = { displayName: undefined, server: false };
+  const options = {
+    displayName: undefined,
+    server: false,
+    workspace: undefined,
+    dryRun: false,
+    deleteData: false,
+    yes: false,
+  };
   const positional = [];
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -349,6 +387,27 @@ const parseArgs = (argv) => {
 
     if (argument === '--server') {
       options.server = true;
+      continue;
+    }
+
+    if (argument === '--dry-run') {
+      options.dryRun = true;
+      continue;
+    }
+
+    if (argument === '--delete-data') {
+      options.deleteData = true;
+      continue;
+    }
+
+    if (argument === '--yes') {
+      options.yes = true;
+      continue;
+    }
+
+    if (argument === '--workspace') {
+      options.workspace = argv[index + 1];
+      index += 1;
       continue;
     }
 
@@ -382,7 +441,10 @@ const listModules = () => {
   console.log('Зарегистрированные модули:');
 
   for (const modulePath of imports) {
-    const manifestFile = path.join(FRONT_MODULES_DIR, `${modulePath.slice(2)}.ts`);
+    const manifestFile = path.join(
+      FRONT_MODULES_DIR,
+      `${modulePath.slice(2)}.ts`,
+    );
     let key = '?';
     let appUuid = '?';
 
@@ -390,11 +452,226 @@ const listModules = () => {
       const manifest = readFileSync(manifestFile, 'utf8');
       key = manifest.match(/key: '([^']+)'/)?.[1] ?? '?';
       appUuid =
-        manifest.match(/applicationUniversalIdentifier: '([^']+)'/)?.[1] ??
-        '?';
+        manifest.match(/applicationUniversalIdentifier: '([^']+)'/)?.[1] ?? '?';
     }
 
     console.log(`  - ${key}  app=${appUuid}  ${modulePath}`);
+  }
+};
+
+// ---------------------------------------------------------------------------
+// yarn smb:module disable (M-6): снимает доступ к модулю — назначения ролей
+// его App; сами данные не трогает. Удаление данных — только отдельным явным
+// шагом --delete-data с подтверждением (ADR-009 п.3).
+// ---------------------------------------------------------------------------
+
+// Ключ → universalIdentifier App. Источники по убыванию доверия: сам App
+// (ADR-009 п.2 — там лежит APPLICATION_UNIVERSAL_IDENTIFIER), затем манифест
+// фронта, затем серверный реестр (модуль может быть только app/ или только server/).
+const resolveModuleApplicationUuid = (key) => {
+  const candidates = [
+    {
+      file: path.join(APPS_DIR, key, 'src/application-config.ts'),
+      pattern: /APPLICATION_UNIVERSAL_IDENTIFIER\s*=\s*'([0-9a-fA-F-]{36})'/,
+    },
+    {
+      file: path.join(FRONT_MODULES_DIR, `smb-${key}/manifest.ts`),
+      pattern: /applicationUniversalIdentifier:\s*'([0-9a-fA-F-]{36})'/,
+    },
+    { file: SERVER_MANIFEST_REGISTRY, pattern: null },
+  ];
+
+  for (const { file, pattern } of candidates) {
+    if (!existsSync(file)) {
+      continue;
+    }
+
+    const content = readFileSync(file, 'utf8');
+
+    if (pattern) {
+      const match = content.match(pattern);
+
+      if (match) {
+        return match[1];
+      }
+
+      continue;
+    }
+
+    const entry = content
+      .split('}')
+      .find((chunk) => chunk.includes(`key: '${key}'`));
+    const match = entry?.match(
+      /applicationUniversalIdentifier:\s*'([0-9a-fA-F-]{36})'/,
+    );
+
+    if (match) {
+      return match[1];
+    }
+  }
+
+  return null;
+};
+
+const connectPostgres = async () => {
+  const connectionString =
+    process.env.SMB_PG_URL ||
+    readServerEnv().PG_DATABASE_URL ||
+    process.env.PG_DATABASE_URL;
+
+  if (!connectionString) {
+    fail(
+      'не найден URL базы: SMB_PG_URL в окружении или PG_DATABASE_URL в packages/twenty-server/.env',
+    );
+  }
+
+  const { default: pg } = await import('pg');
+  const client = new pg.Client({ connectionString });
+
+  await client.connect();
+
+  return {
+    client,
+    close: async () => {
+      await client.end();
+    },
+  };
+};
+
+const confirmDestructiveAction = async (question) => {
+  const interface_ = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+  const answer = await interface_.question(question);
+
+  interface_.close();
+
+  return answer.trim();
+};
+
+const disableModule = async (key, options) => {
+  const universalIdentifier = resolveModuleApplicationUuid(key);
+
+  if (!universalIdentifier) {
+    fail(
+      `модуль '${key}' не найден: нет ни app/${key}/src/application-config.ts, ни манифеста фронта, ни строки в серверном реестре`,
+    );
+  }
+
+  const { client, close } = await connectPostgres();
+
+  try {
+    const { rows: installedApplications } = await client.query(
+      'SELECT id, "workspaceId", name, version, state ' +
+        'FROM core.application ' +
+        'WHERE "universalIdentifier" = $1 AND "deletedAt" IS NULL ' +
+        'ORDER BY "createdAt"',
+      [universalIdentifier],
+    );
+    const applications = options.workspace
+      ? installedApplications.filter(
+          (application) => application.workspaceId === options.workspace,
+        )
+      : installedApplications;
+
+    if (applications.length === 0) {
+      console.log(
+        `App модуля '${key}' не установлен${
+          options.workspace
+            ? ` в компании ${options.workspace}`
+            : ' ни в одной компании'
+        } — снимать доступ нечего.`,
+      );
+
+      return;
+    }
+
+    const plan = [];
+
+    for (const application of applications) {
+      const { rows } = await client.query(
+        'SELECT count(*)::int AS count FROM core."roleTarget" ' +
+          'WHERE "applicationId" = $1 AND "workspaceId" = $2',
+        [application.id, application.workspaceId],
+      );
+
+      plan.push({ application, assignments: rows[0].count });
+    }
+
+    console.log(`Модуль '${key}' (${universalIdentifier}):`);
+
+    for (const { application, assignments } of plan) {
+      console.log(
+        `  - компания ${application.workspaceId}: App '${application.name}' v${application.version ?? 'null'} (${application.state}), назначений ролей ${assignments}`,
+      );
+    }
+
+    if (options.dryRun) {
+      console.log('dry-run: ничего не изменено.');
+
+      return;
+    }
+
+    if (options.deleteData) {
+      if (!options.workspace) {
+        fail(
+          '--delete-data работает на одну компанию: добавьте --workspace <uuid>',
+        );
+      }
+
+      if (!options.yes) {
+        if (!process.stdin.isTTY) {
+          fail('--delete-data без терминала требует явного --yes');
+        }
+
+        const answer = await confirmDestructiveAction(
+          `Удалить ДАННЫЕ модуля '${key}' из компании ${options.workspace}? Введите "удалить": `,
+        );
+
+        if (answer !== 'удалить') {
+          console.log('Отменено: данные не тронуты.');
+
+          return;
+        }
+      }
+
+      await runMetadataGraphql({
+        query:
+          'mutation UninstallApplication($universalIdentifier: String!) {' +
+          ' uninstallApplication(universalIdentifier: $universalIdentifier) }',
+        variables: { universalIdentifier },
+      });
+      console.log(
+        'uninstallApplication выполнен: данные модуля удалены штатным жизненным циклом Apps.',
+      );
+
+      return;
+    }
+
+    let revokedAssignments = 0;
+
+    for (const { application } of plan) {
+      const result = await client.query(
+        'DELETE FROM core."roleTarget" ' +
+          'WHERE "applicationId" = $1 AND "workspaceId" = $2',
+        [application.id, application.workspaceId],
+      );
+
+      revokedAssignments += result.rowCount;
+      console.log(
+        `  - ${application.workspaceId}: снято назначений роли ${result.rowCount}`,
+      );
+    }
+
+    console.log(
+      `Готово: доступ снят (назначений роли удалено: ${revokedAssignments}), данные не тронуты.`,
+    );
+    console.log(
+      `Удаление данных — отдельный шаг: yarn smb:module disable ${key} --workspace <uuid> --delete-data`,
+    );
+  } finally {
+    await close();
   }
 };
 
@@ -459,7 +736,10 @@ const newModule = (key, options) => {
     path.join(frontDir, 'manifest.ts'),
     frontManifest({ key, displayName, manifestConst, appUuid: ids.appUuid }),
   );
-  writeFile(path.join(frontDir, 'pages', `${pascalCase(key)}Page.tsx`), frontPage({ key, displayName }));
+  writeFile(
+    path.join(frontDir, 'pages', `${pascalCase(key)}Page.tsx`),
+    frontPage({ key, displayName }),
+  );
 
   insertAfterMarker(
     FRONT_REGISTRY,
@@ -468,16 +748,49 @@ const newModule = (key, options) => {
   );
   insertAfterMarker(FRONT_REGISTRY, LIST_MARKER, `  ${manifestConst},`);
 
+  // Серверный реестр манифестов: строка нужна и без флага --server — по ней
+  // guard находит App модуля, а сверка версии при старте читает expectedVersion
+  // (M-4/M-7). Исходник версии один: APP_VERSION, он же пишется в package.json.
+  if (existsSync(SERVER_MANIFEST_REGISTRY)) {
+    insertAfterMarker(
+      SERVER_MANIFEST_REGISTRY,
+      MANIFEST_MARKER,
+      `  { key: '${key}', applicationUniversalIdentifier: '${ids.appUuid}', expectedVersion: '${APP_VERSION}' },`,
+    );
+  } else {
+    console.log(
+      `  ! ${relative(SERVER_MANIFEST_REGISTRY)} не найден — строка манифеста не вставлена`,
+    );
+  }
+
   // server/ (по флагу)
   if (options.server) {
     if (!existsSync(SERVER_MODULES_DIR)) {
       fail('каталог packages/twenty-server/src/modules не найден');
     }
 
+    writeFile(path.join(serverDir, `${key}.module.ts`), serverModule({ key }));
     writeFile(
-      path.join(serverDir, `${key}.module.ts`),
-      serverModule({ key }),
+      path.join(serverDir, 'migrations', `smb-${key}.migrations.ts`),
+      serverMigrations({ key }),
     );
+
+    if (existsSync(SERVER_MIGRATIONS_REGISTRY)) {
+      insertAfterMarker(
+        SERVER_MIGRATIONS_REGISTRY,
+        MIGRATIONS_IMPORTS_MARKER,
+        `import { ${migrationsConstName(key)} } from 'src/modules/smb-${key}/migrations/smb-${key}.migrations';`,
+      );
+      insertAfterMarker(
+        SERVER_MIGRATIONS_REGISTRY,
+        MIGRATIONS_MARKER,
+        `  ...${migrationsConstName(key)},`,
+      );
+    } else {
+      console.log(
+        `  ! ${relative(SERVER_MIGRATIONS_REGISTRY)} не найден — миграции модуля не подключены`,
+      );
+    }
 
     if (existsSync(SERVER_REGISTRY)) {
       insertAfterMarker(
@@ -532,10 +845,23 @@ const main = () => {
     return;
   }
 
+  if (command === 'disable') {
+    if (!key) {
+      fail('укажите ключ: yarn smb:module disable <key>');
+    }
+
+    disableModule(key, options).catch((error) =>
+      fail(error instanceof Error ? error.message : String(error)),
+    );
+    return;
+  }
+
   console.log(
     'Использование:\n' +
       '  yarn smb:module new <key> [--display-name "Название"] [--server]\n' +
-      '  yarn smb:module list',
+      '  yarn smb:module list\n' +
+      '  yarn smb:module disable <key> [--workspace <uuid>] [--dry-run] ' +
+      '[--delete-data --yes]',
   );
   process.exit(positional.length === 0 ? 0 : 1);
 };

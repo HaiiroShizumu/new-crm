@@ -1,0 +1,110 @@
+/*
+  SMB skin, motion and loading states. Only opacity, transform and paint
+  properties are animated, so nothing here triggers layout.
+*/
+
+html[data-skin='smb'] {
+  --smb-duration-fast: 120ms;
+  --smb-duration-base: 200ms;
+  --smb-duration-slow: 320ms;
+  --smb-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---------- Interaction feedback ---------- */
+
+/* Scoped to elements whose transitions the skin owns; a blanket rule on
+   button/a would replace transitions upstream components declare themselves */
+html[data-skin='smb']
+  :is(
+    .navigation-drawer-item,
+    [data-clickable],
+    div.table-cell,
+    [id^='record-board-card-'] [data-selected]
+  ) {
+  transition:
+    background-color var(--smb-duration-fast) ease-out,
+    border-color var(--smb-duration-fast) ease-out,
+    box-shadow var(--smb-duration-base) ease-out,
+    color var(--smb-duration-fast) ease-out;
+}
+
+/* Surfaces retint smoothly when the theme, accent or transparency changes */
+html[data-skin='smb'] [data-page-surface='main'] > * > *,
+html[data-skin='smb'] [data-side-panel] > aside,
+html[data-skin='smb'] [data-smb-rail-wrap] {
+  transition:
+    background-color var(--smb-duration-slow) ease-out,
+    border-color var(--smb-duration-slow) ease-out,
+    box-shadow var(--smb-duration-slow) ease-out;
+}
+
+html[data-skin='smb'] [data-smb-wallpaper-layer='dim'] {
+  transition: background-color var(--smb-duration-slow) ease-out;
+}
+
+/* ---------- Page enter ---------- */
+
+/* Opacity only: a transform here would re-anchor position:fixed descendants
+   (cell editors, drag overlays) to the panel for the length of the animation */
+@keyframes smb-surface-enter {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+html[data-skin='smb'] [data-page-surface='main'] > * > * > * {
+  animation: smb-surface-enter var(--smb-duration-base) var(--smb-ease-out);
+}
+
+/* ---------- Skeletons ---------- */
+
+/* Every skeleton, upstream or ours, is tinted from the text tier of the
+   surface it sits on instead of the opaque greys baked into SkeletonTheme
+   props, so placeholders stay legible on glass at any transparency and over
+   any wallpaper. --custom-highlight-background is the library's own hook. */
+html[data-skin='smb'] .react-loading-skeleton {
+  --custom-highlight-background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--t-font-color-primary) 10%, transparent) 50%,
+    transparent 100%
+  );
+
+  background-color: color-mix(
+    in srgb,
+    var(--t-font-color-primary) 9%,
+    transparent
+  );
+}
+
+@keyframes smb-skeleton-enter {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* Short loads never flash a skeleton: it only fades in after a beat */
+html[data-skin='smb'] [data-smb-skeleton] {
+  animation: smb-skeleton-enter var(--smb-duration-slow) ease-out 80ms both;
+}
+
+/* ---------- Reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-skin='smb'] *,
+  html[data-skin='smb'] *::before,
+  html[data-skin='smb'] *::after {
+    animation-duration: 1ms;
+    animation-iteration-count: 1;
+    scroll-behavior: auto;
+    transition-duration: 1ms;
+  }
+}

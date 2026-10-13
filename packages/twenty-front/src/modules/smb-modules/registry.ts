@@ -5,11 +5,19 @@ import { type SmbModuleManifest } from '@/smb-modules/types/SmbModuleManifest';
 // по маркерам ниже — см. docs/dev/module-authoring.md. Маркеры стоят ровно
 // по одному разу, каждый в своём месте.
 // smb:module:imports
+import { SMB_TASKS_MODULE_MANIFEST } from '@/smb-tasks/manifest';
+import { SMB_FEED_MODULE_MANIFEST } from '@/smb-feed/manifest';
+import { SMB_ABSENCES_MODULE_MANIFEST } from '@/smb-absences/manifest';
+import { SMB_ORG_STRUCTURE_MODULE_MANIFEST } from '@/smb-org-structure/manifest';
 
 // dependsOn участвует только в порядке установки пресета (ADR-006), не во
 // включении: модуль включён тогда и только тогда, когда установлен его App.
 export const SMB_MODULE_MANIFESTS: SmbModuleManifest[] = [
   // smb:module:list
+  SMB_TASKS_MODULE_MANIFEST,
+  SMB_FEED_MODULE_MANIFEST,
+  SMB_ABSENCES_MODULE_MANIFEST,
+  SMB_ORG_STRUCTURE_MODULE_MANIFEST,
 ];
 
 export const getSmbModuleManifestByKey = (

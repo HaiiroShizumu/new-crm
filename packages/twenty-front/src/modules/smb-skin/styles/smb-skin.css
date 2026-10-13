@@ -1,7 +1,12 @@
 /*
   SMB skin. Every rule is scoped to html[data-skin='smb'] so removing the
-  attribute restores the stock Twenty look. Upstream components only carry
-  data-smb-* hooks; all visual decisions live here.
+  attribute restores the stock Twenty look.
+
+  The skin never patches upstream components. It restyles them through
+  (1) the --t-* theme tokens, re-declared per surface scope, and (2) hooks
+  upstream already renders: data-page-surface, data-side-panel, the
+  record-table/record-board ids and the table-cell class names. data-smb-*
+  attributes only exist on our own shell (smb-shell, smb-skin components).
 
   Surfaces: L0 canvas → L1 panel/rail (--smb-surface-l1) → L2 card (--smb-surface-l2).
   Text tiers:
@@ -10,7 +15,10 @@
   - solid (menus, inputs, root surfaces): --color-ink / --color-ink-muted
 */
 
+@import '../../smb-brand/fonts.css';
 @import './smb-records.css';
+@import './smb-motion.css';
+@import './smb-toolbar.css';
 /* messenger css подключается на Этапе 4 (мессенджер в v1 отсутствует) */
 /* @import './smb-messenger.css'; */
 
@@ -36,23 +44,30 @@ html[data-skin='smb'] {
     color-mix(in srgb, var(--color-accent) 28%, transparent);
   --smb-ease-rail: cubic-bezier(0.22, 1, 0.36, 1);
 
+  /* Glass stays legible by construction instead of by recolouring text: the
+     transparency slider maps onto [floor, 1], and the backdrop is pushed
+     toward the surface tone, so theme ink keeps its contrast over any
+     wallpaper at any slider position */
+  --smb-glass-opacity: calc(
+    var(--smb-glass-floor) + var(--panel-opacity, 0.55) *
+      (1 - var(--smb-glass-floor))
+  );
+  --smb-glass-backdrop: blur(var(--smb-blur-l1)) saturate(1.4)
+    brightness(var(--smb-glass-backdrop-brightness));
+
   /* Opaque stand-in for glass, used by nested surfaces (sticky cells, inputs)
      so stacked translucent fills don't compound over the wallpaper */
   --smb-surface-frost: color-mix(
     in srgb,
-    var(--color-surface-solid) calc(var(--panel-opacity, 0.55) * 100%),
-    var(--smb-wallpaper-average, var(--smb-canvas-solid))
+    var(--color-surface-solid) calc(var(--smb-glass-opacity) * 100%),
+    var(--smb-backdrop-average)
   );
   --smb-glass-fill: color-mix(
     in srgb,
-    var(--color-surface-solid) calc(var(--panel-opacity, 0.55) * 100%),
+    var(--color-surface-solid) calc(var(--smb-glass-opacity) * 100%),
     transparent
   );
-  --smb-glass-border: color-mix(
-    in srgb,
-    var(--color-border) 55%,
-    transparent
-  );
+  --smb-glass-border: color-mix(in srgb, var(--color-border) 55%, transparent);
 
   /* Surface system: L0 canvas → L1 panel/rail → L2 elevated card */
   --smb-space-unit: 4px;
@@ -80,6 +95,13 @@ html[data-skin='smb'] {
 }
 
 html[data-skin='smb'].light {
+  --smb-glass-floor: 0.5;
+  --smb-glass-backdrop-brightness: 1.15;
+  --smb-backdrop-average: color-mix(
+    in srgb,
+    var(--smb-wallpaper-average, var(--smb-canvas-solid)) 85%,
+    white
+  );
   --smb-canvas-solid: #f4f4f5;
   --color-bg: #f4f4f5;
   --color-surface: #ffffff;
@@ -103,6 +125,13 @@ html[data-skin='smb'].light {
 }
 
 html[data-skin='smb'].dark {
+  --smb-glass-floor: 0.38;
+  --smb-glass-backdrop-brightness: 0.75;
+  --smb-backdrop-average: color-mix(
+    in srgb,
+    var(--smb-wallpaper-average, var(--smb-canvas-solid)) 75%,
+    black
+  );
   --smb-canvas-solid: #121212;
   --color-bg: #121212;
   --color-surface: #1e1e1e;
@@ -233,26 +262,24 @@ html[data-skin='smb'] {
 }
 
 /* Glass scopes switch the base surface and text tier */
-html[data-skin='smb'] [data-smb-panel],
-html[data-skin='smb'] [data-smb-rail-wrap],
+html[data-skin='smb'] [data-page-surface],
 html[data-skin='smb'] [data-side-panel],
-html[data-skin='smb'] [data-page-surface='side-panel'] {
+html[data-skin='smb'] [data-smb-rail-wrap] {
   --smb-surface-base: var(--smb-surface-frost);
   --smb-fg: var(--color-text);
   --smb-fg-muted: var(--color-text-muted);
 }
 
-html[data-skin='smb'][data-frames='false'] [data-smb-panel] {
+html[data-skin='smb'][data-frames='false'] [data-page-surface] {
   --smb-surface-base: var(--smb-wallpaper-average, var(--smb-canvas-solid));
 }
 
 /* Custom properties resolve where they're declared, so the derived set is
    re-declared on every scope that changes its inputs */
 html[data-skin='smb'],
-html[data-skin='smb'] [data-smb-panel],
-html[data-skin='smb'] [data-smb-rail-wrap],
+html[data-skin='smb'] [data-page-surface],
 html[data-skin='smb'] [data-side-panel],
-html[data-skin='smb'] [data-page-surface='side-panel'] {
+html[data-skin='smb'] [data-smb-rail-wrap] {
   --t-background-primary: var(--smb-surface-base);
   --t-background-secondary: color-mix(
     in srgb,
@@ -288,9 +315,21 @@ html[data-skin='smb'] [data-page-surface='side-panel'] {
   );
 }
 
+/* On glass the secondary…quaternary steps are tints laid over the panel, not
+   opaque fills: bars, hovers and inputs keep the wallpaper showing through.
+   Primary stays the opaque frost because sticky cells and headers rely on it
+   to cover content scrolling beneath them. */
+html[data-skin='smb'] [data-page-surface],
+html[data-skin='smb'] [data-side-panel],
+html[data-skin='smb'] [data-smb-rail-wrap] {
+  --t-background-secondary: color-mix(in srgb, var(--smb-fg) 3.5%, transparent);
+  --t-background-tertiary: color-mix(in srgb, var(--smb-fg) 7%, transparent);
+  --t-background-quaternary: color-mix(in srgb, var(--smb-fg) 11%, transparent);
+  --t-box-shadow-sidebar: none;
+}
+
 /* Chrome sitting directly on the canvas */
-html[data-skin='smb'] [data-smb-top-bar],
-html[data-skin='smb'] [data-smb-page-header] {
+html[data-skin='smb'] [data-smb-top-bar] {
   --t-background-primary: var(--color-control);
   --t-font-color-primary: var(--color-on-bg);
   --t-font-color-secondary: var(--color-on-bg-muted);
@@ -366,10 +405,6 @@ html[data-skin='smb'] [data-smb-wallpaper-layer='dim'] {
 
 /* ---------- App shell ---------- */
 
-html[data-skin='smb'] [data-smb-layout] {
-  background: transparent;
-}
-
 html[data-skin='smb'] {
   --smb-shell-gap: 8px;
 }
@@ -388,7 +423,7 @@ html[data-skin='smb'] [data-smb-page-container] {
 
 html[data-skin='smb'] [data-smb-rail-wrap],
 html[data-skin='smb'] [data-smb-surface='l1'] {
-  backdrop-filter: blur(var(--smb-blur-l1));
+  backdrop-filter: var(--smb-glass-backdrop);
   background: var(--smb-surface-l1);
   border: 1px solid var(--smb-border-l1);
   border-radius: var(--radius-panel);
@@ -550,61 +585,14 @@ html[data-skin='smb']:has([data-smb-top-bar])
   display: none;
 }
 
-/* ---------- Page: title in top bar, body in a glass panel ---------- */
+/* ---------- Page: body in a glass panel ---------- */
 
-html[data-skin='smb'] [data-smb-page] {
-  flex-direction: column;
-  gap: 6px;
-}
-
-/* The wrapper's width: 0 only works as a row flex item; in the column
-   layout it would collapse the panel to a sliver */
-html[data-skin='smb'] [data-smb-panel-wrap] {
-  min-height: 0;
-  width: auto;
-}
-
-html[data-skin='smb'] [data-smb-page-header] {
-  background: transparent;
-  min-height: 52px;
-  padding-inline: 10px;
-}
-
-html[data-skin='smb'] [data-smb-page-title] {
-  color: var(--color-on-bg);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
-  transition: color 0.2s ease;
-}
-
-html[data-skin='smb'] [data-smb-chrome-title] [data-smb-page-title] {
-  color: var(--color-on-bg);
-  text-shadow: var(--chrome-text-shadow);
-}
-
-html[data-skin='smb'] [data-smb-chrome-actions] {
-  align-items: center;
-  display: flex;
-  flex-shrink: 0;
-  gap: 8px;
-}
-
-html[data-skin='smb'] [data-smb-page-title] > svg,
-html[data-skin='smb'] [data-smb-page-title-icon] {
-  display: none;
-}
-
-html[data-skin='smb'] [data-smb-page-title='start'] {
-  font-size: 22px;
-}
-
-html[data-skin='smb'] [data-smb-page-title='center'] {
-  font-size: 16px;
-}
-
-html[data-skin='smb'] [data-smb-panel] {
-  backdrop-filter: blur(var(--smb-blur-l1));
+/* PageCardLayout renders root[data-page-surface='main'] > wrapper > card and
+   only the root carries a hook, hence the one structural selector. If
+   upstream reshapes the layout this stops matching and the page falls back
+   to an opaque frost card: degraded, not broken. */
+html[data-skin='smb'] [data-page-surface='main'] > * > * {
+  backdrop-filter: var(--smb-glass-backdrop);
   background: var(--smb-surface-l1);
   border: 1px solid var(--smb-border-l1);
   border-radius: var(--radius-panel);
@@ -619,27 +607,20 @@ html[data-skin='smb'] [data-side-panel] {
 }
 
 html[data-skin='smb'] [data-side-panel] > aside {
-  backdrop-filter: blur(var(--smb-blur-l1));
+  backdrop-filter: var(--smb-glass-backdrop);
   background: var(--smb-surface-l1);
-  border-left: 1px solid var(--smb-border-l1);
-  border-radius: var(--radius-panel) 0 0 var(--radius-panel);
+  border: 1px solid var(--smb-border-l1);
+  border-radius: var(--radius-panel);
   box-shadow: var(--smb-shadow-l1);
   isolation: isolate;
 }
 
+/* A page rendered inside the side panel sits on the panel's glass */
 html[data-skin='smb'] [data-page-surface='side-panel'] {
   background: transparent;
 }
 
-html[data-skin='smb'][data-frames='false'] [data-smb-panel] {
-  backdrop-filter: none;
-  background: none;
-  border-color: transparent;
-  box-shadow: none;
-}
-
-html[data-skin='smb'][data-frames='false'] [data-side-panel] > aside,
-html[data-skin='smb'][data-frames='false'] [data-page-surface='side-panel'] {
+html[data-skin='smb'][data-frames='false'] [data-page-surface='main'] > * > * {
   backdrop-filter: none;
   background: none;
   border-color: transparent;
@@ -653,7 +634,8 @@ html[data-skin='smb'][data-frames='false'] [data-page-surface='side-panel'] {
     padding: 0;
   }
 
-  html[data-skin='smb'] [data-smb-panel] {
+  html[data-skin='smb'] [data-page-surface='main'] > * > * {
+    border-inline: none;
     border-radius: 0;
   }
 }

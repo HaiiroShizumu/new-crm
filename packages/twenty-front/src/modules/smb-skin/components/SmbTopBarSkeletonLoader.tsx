@@ -1,11 +1,11 @@
 import { styled } from '@linaria/react';
-import Skeleton from 'react-loading-skeleton';
+import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import { themeCssVariables } from 'twenty-ui/theme';
 
-import { SmbSkeletonTheme } from '@/smb-skin/components/SmbSkeletonTheme';
 import { APP_HEADER_HEIGHT } from '@/ui/layout/constants/AppHeaderHeight';
 
-const PILL_TAB_WIDTHS = [96, 196, 116, 88];
+const MODE_TAB_WIDTHS = [88, 104];
+const WORKSPACE_TAB_WIDTHS = [96, 132, 116, 88];
 
 const StyledContainer = styled.div`
   align-items: center;
@@ -14,8 +14,16 @@ const StyledContainer = styled.div`
   display: grid;
   flex-shrink: 0;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  height: ${APP_HEADER_HEIGHT}px;
-  padding: 0 ${themeCssVariables.spacing[3]};
+  min-height: ${APP_HEADER_HEIGHT}px;
+  padding: ${themeCssVariables.spacing[1]} ${themeCssVariables.spacing[3]};
+`;
+
+const StyledCenter = styled.div`
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  grid-column: 2;
 `;
 
 const StyledPillTabs = styled.div`
@@ -26,7 +34,6 @@ const StyledPillTabs = styled.div`
   box-shadow: var(--smb-shadow-l1);
   display: inline-flex;
   gap: 2px;
-  grid-column: 2;
   isolation: isolate;
   padding: 3px;
 `;
@@ -49,23 +56,43 @@ const StyledAvatar = styled.div`
   padding: ${themeCssVariables.spacing['0.5']};
 `;
 
-export const SmbTopBarSkeletonLoader = () => (
-  <StyledContainer data-smb-top-bar>
-    <StyledPillTabs>
-      <SmbSkeletonTheme surface="glass" borderRadius={999}>
-        {PILL_TAB_WIDTHS.map((pillTabWidth, pillTabIndex) => (
-          <Skeleton key={pillTabIndex} width={pillTabWidth} height={32} />
+type SmbTopBarSkeletonLoaderProps = {
+  hasModeTabs: boolean;
+  hasWorkspaceTabs: boolean;
+};
+
+export const SmbTopBarSkeletonLoader = ({
+  hasModeTabs,
+  hasWorkspaceTabs,
+}: SmbTopBarSkeletonLoaderProps) => {
+  const pillTabRows = [
+    ...(hasModeTabs ? [MODE_TAB_WIDTHS] : []),
+    ...(hasWorkspaceTabs ? [WORKSPACE_TAB_WIDTHS] : []),
+  ];
+
+  return (
+    <StyledContainer data-smb-top-bar>
+      <StyledCenter>
+        {pillTabRows.map((pillTabWidths, rowIndex) => (
+          <StyledPillTabs key={rowIndex}>
+            <SkeletonTheme borderRadius={999}>
+              {pillTabWidths.map((pillTabWidth, pillTabIndex) => (
+                <Skeleton key={pillTabIndex} width={pillTabWidth} height={28} />
+              ))}
+            </SkeletonTheme>
+          </StyledPillTabs>
         ))}
-      </SmbSkeletonTheme>
-    </StyledPillTabs>
-    <SmbSkeletonTheme surface="canvas" borderRadius={6}>
-      <StyledEnd>
-        <Skeleton width={20} height={20} />
-        <Skeleton width={44} height={18} />
-        <StyledAvatar>
-          <StyledCircleSkeleton borderRadius="50%" width={40} height={40} />
-        </StyledAvatar>
-      </StyledEnd>
-    </SmbSkeletonTheme>
-  </StyledContainer>
-);
+      </StyledCenter>
+      <SkeletonTheme borderRadius={6}>
+        <StyledEnd>
+          <Skeleton width={20} height={20} />
+          <Skeleton width={20} height={20} />
+          <Skeleton width={44} height={18} />
+          <StyledAvatar>
+            <StyledCircleSkeleton borderRadius="50%" width={24} height={24} />
+          </StyledAvatar>
+        </StyledEnd>
+      </SkeletonTheme>
+    </StyledContainer>
+  );
+};

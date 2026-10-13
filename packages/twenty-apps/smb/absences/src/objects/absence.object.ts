@@ -1,0 +1,131 @@
+import { defineObject, FieldType } from 'twenty-sdk/define';
+
+import {
+  ABSENCE_OBJECT_UNIVERSAL_IDENTIFIER,
+  ABSENCE_TITLE_UNIVERSAL_IDENTIFIER,
+  ABSENCE_ABSENCETYPE_UNIVERSAL_IDENTIFIER,
+  ABSENCE_STARTDATE_UNIVERSAL_IDENTIFIER,
+  ABSENCE_ENDDATE_UNIVERSAL_IDENTIFIER,
+  ABSENCE_STATUS_UNIVERSAL_IDENTIFIER,
+  ABSENCE_WORKFLOWRUNID_UNIVERSAL_IDENTIFIER,
+} from 'src/universal-identifiers';
+
+export default defineObject({
+  universalIdentifier: ABSENCE_OBJECT_UNIVERSAL_IDENTIFIER,
+  nameSingular: 'absence',
+  namePlural: 'absences',
+  labelSingular: 'Отсутствие',
+  labelPlural: 'Отсутствия',
+  description: 'Отпуск, больничный, командировка, отгул',
+  icon: 'IconCalendarOff',
+  labelIdentifierFieldMetadataUniversalIdentifier:
+    ABSENCE_TITLE_UNIVERSAL_IDENTIFIER,
+  fields: [
+    {
+      universalIdentifier: ABSENCE_TITLE_UNIVERSAL_IDENTIFIER,
+      type: FieldType.TEXT,
+      label: 'Название',
+      icon: 'IconAbc',
+      name: 'title',
+    },
+    {
+      universalIdentifier: ABSENCE_ABSENCETYPE_UNIVERSAL_IDENTIFIER,
+      type: FieldType.SELECT,
+      label: 'Тип',
+      icon: 'IconCategory',
+      name: 'absenceType',
+      defaultValue: 'VACATION',
+      options: [
+        {
+          id: 'de835016-dc9e-4dca-aa0b-a0e97b3aee22',
+          value: 'VACATION',
+          label: 'Отпуск',
+          position: 0,
+          color: 'blue',
+        },
+        {
+          id: '5a9df739-e344-45ee-a663-3d55008513b9',
+          value: 'SICK_LEAVE',
+          label: 'Больничный',
+          position: 1,
+          color: 'red',
+        },
+        {
+          id: 'db00effc-9068-4425-b41f-5c45fe7f15a9',
+          value: 'BUSINESS_TRIP',
+          label: 'Командировка',
+          position: 2,
+          color: 'orange',
+        },
+        {
+          id: '5d6912f9-f753-4493-bd33-299a52b7aeca',
+          value: 'TIME_OFF',
+          label: 'Отгул',
+          position: 3,
+          color: 'gray',
+        },
+      ],
+    },
+    {
+      universalIdentifier: ABSENCE_STARTDATE_UNIVERSAL_IDENTIFIER,
+      type: FieldType.DATE,
+      label: 'С',
+      icon: 'IconCalendar',
+      name: 'startDate',
+    },
+    {
+      universalIdentifier: ABSENCE_ENDDATE_UNIVERSAL_IDENTIFIER,
+      type: FieldType.DATE,
+      label: 'По',
+      icon: 'IconCalendar',
+      name: 'endDate',
+    },
+    {
+      universalIdentifier: ABSENCE_STATUS_UNIVERSAL_IDENTIFIER,
+      type: FieldType.SELECT,
+      label: 'Статус',
+      icon: 'IconCircleCheck',
+      name: 'status',
+      defaultValue: 'REQUESTED',
+      options: [
+        {
+          id: '839747e8-429d-450d-9b32-8526168bd61f',
+          value: 'REQUESTED',
+          label: 'Запрошено',
+          position: 0,
+          color: 'gray',
+        },
+        {
+          id: '0718df0a-c4c2-4177-89b3-72c3a932b8cd',
+          value: 'APPROVED',
+          label: 'Согласовано',
+          position: 1,
+          color: 'green',
+        },
+        {
+          id: 'bd9831c3-2a0d-496b-bfa1-ce2b1170d504',
+          value: 'REJECTED',
+          label: 'Отклонено',
+          position: 2,
+          color: 'red',
+        },
+        {
+          id: '70ab2b3f-1884-4b91-9ec9-bc7a78869cd0',
+          value: 'CANCELLED',
+          label: 'Отменено',
+          position: 3,
+          color: 'orange',
+        },
+      ],
+    },
+    {
+      universalIdentifier: ABSENCE_WORKFLOWRUNID_UNIVERSAL_IDENTIFIER,
+      type: FieldType.TEXT,
+      label: 'Запуск процесса',
+      icon: 'IconRoute',
+      name: 'workflowRunId',
+      isNullable: true,
+      defaultValue: null,
+    },
+  ],
+});

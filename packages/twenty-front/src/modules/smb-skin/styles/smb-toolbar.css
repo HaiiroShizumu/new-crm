@@ -1,0 +1,132 @@
+/*
+  SMB skin, page chrome: the page title in the app top bar and the single
+  toolbar row of record pages (view tabs · filter · sort · view options ·
+  page actions).
+
+  One control spec for the whole row: --smb-control-height tall,
+  --smb-control-radius corners, no fill at rest, a tint on hover. Only the
+  primary action keeps a filled background.
+
+  The toolbar row is upstream's TopBar; it is addressed through the view
+  switcher we mount in it, never through generated class names.
+*/
+
+html[data-skin='smb'] {
+  --smb-control-height: 28px;
+  --smb-control-radius: 8px;
+  --smb-toolbar-height: 44px;
+  --smb-toolbar-actions-width: 172px;
+}
+
+/* ---------- Page title in the app top bar ---------- */
+
+html[data-skin='smb'] [data-smb-chrome-title] {
+  color: var(--color-on-bg);
+  flex: 1 1 auto;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-shadow: var(--chrome-text-shadow);
+}
+
+html[data-skin='smb'] [data-smb-chrome-title] > * {
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  gap: 8px;
+}
+
+/* Page actions of pages without a toolbar land next to the global buttons */
+html[data-skin='smb'] [data-smb-top-actions] [data-smb-chrome-actions] {
+  flex: 0 1 320px;
+  justify-content: flex-end;
+  margin-right: 6px;
+}
+
+html[data-skin='smb'] [data-smb-chrome-actions] > * {
+  flex: 1 1 0;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+/* ---------- Record toolbar ---------- */
+
+html[data-skin='smb'] div:has(> div > [data-smb-view-switcher]) {
+  gap: 12px;
+  height: var(--smb-toolbar-height);
+  margin-left: 0;
+  padding-inline: 8px;
+}
+
+/* Upstream's row wrapper indents the bar and draws the divider under it */
+html[data-skin='smb'] div:has(> div > div > [data-smb-view-switcher]) {
+  border-bottom-color: var(--smb-row-divider);
+  margin-left: 0;
+}
+
+html[data-skin='smb'] div:has(> [data-smb-view-switcher]) {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+html[data-skin='smb'] div:has(> [data-smb-view-switcher]) + div {
+  align-items: center;
+  flex: 1 1 0;
+  gap: 2px;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+/* Filter, sort and view options: same ghost control as the view tabs */
+html[data-skin='smb']
+  div:has(> [data-smb-view-switcher])
+  + div
+  button:not([data-smb-chrome-actions] *) {
+  background: transparent;
+  border-radius: var(--smb-control-radius);
+  font-weight: 500;
+  height: var(--smb-control-height);
+  padding-inline: 8px;
+  transition:
+    background-color var(--smb-duration-fast) ease-out,
+    color var(--smb-duration-fast) ease-out;
+}
+
+html[data-skin='smb']
+  div:has(> [data-smb-view-switcher])
+  + div
+  button:not([data-smb-chrome-actions] *):is(
+    :hover,
+    [aria-expanded='true'],
+    [aria-expanded='true'] > *
+  ) {
+  background: var(--t-background-tertiary);
+  color: var(--t-font-color-primary);
+}
+
+/* Page actions close the row behind a hairline. The pinned-actions menu
+   measures its container to decide what collapses into the overflow menu, so
+   the slot needs a definite width rather than fitting its content. */
+html[data-skin='smb']
+  div:has(> [data-smb-view-switcher])
+  + div
+  > [data-smb-chrome-actions] {
+  border-left: 1px solid var(--t-border-color-medium);
+  flex: 0 0 var(--smb-toolbar-actions-width);
+  justify-content: flex-end;
+  margin-left: 6px;
+  padding-left: 8px;
+}
+
+/* Every action in the row follows the control spec */
+html[data-skin='smb'] [data-smb-chrome-actions] button {
+  border-radius: var(--smb-control-radius);
+  height: var(--smb-control-height);
+  min-width: var(--smb-control-height);
+}
+
+@media (max-width: 768px) {
+  html[data-skin='smb'] {
+    --smb-toolbar-actions-width: 104px;
+  }
+}

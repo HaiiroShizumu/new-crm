@@ -18,11 +18,8 @@ export const AppNavigationDrawer = ({
 }: AppNavigationDrawerProps) => {
   const isMobile = useIsMobile();
   const isSettingsDrawer = useIsSettingsDrawer();
-  const {
-    showDrawerModeSwitcher,
-    showModesOnlyInSidebar,
-    showIconRail,
-  } = useNavigationChromeLayout();
+  const { showDrawerModeSwitcher, showModesOnlyInSidebar, showIconRail } =
+    useNavigationChromeLayout();
 
   // The main navigation is the home page on mobile, not a drawer.
   if (isMobile && !isSettingsDrawer) {

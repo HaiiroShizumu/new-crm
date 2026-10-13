@@ -5,6 +5,7 @@ import { SettingsPageLayout } from '@/settings/components/layout/SettingsPageLay
 import { FormatPreferencesSettings } from '@/settings/experience/components/FormatPreferencesSettings';
 import { OpenRecordInPreferencePicker } from '@/settings/experience/components/OpenRecordInPreferencePicker';
 import { UiScalePicker } from '@/settings/experience/components/UiScalePicker';
+import { SmbAppearanceSettings } from '@/smb-skin/settings/components/SmbAppearanceSettings';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { SettingsPath } from 'twenty-shared/types';
 import { getSettingsPath } from 'twenty-shared/utils';
@@ -35,6 +36,7 @@ export const SettingsExperience = () => {
     >
       <SettingsPageContainer>
         <SettingsAppearance />
+        <SmbAppearanceSettings />
 
         <Section.Root>
           <Section.Header

@@ -6,7 +6,8 @@ import { TopBar } from '@/ui/layout/top-bar/components/TopBar';
 import { QueryParamsFiltersEffect } from '@/views/components/QueryParamsFiltersEffect';
 import { QueryParamsSortsEffect } from '@/views/components/QueryParamsSortsEffect';
 import { ViewBarPageTitle } from '@/views/components/ViewBarPageTitle';
-import { ViewPickerDropdown } from '@/views/view-picker/components/ViewPickerDropdown';
+import { SmbChromeActionsSlot } from '@/smb-skin/components/SmbChromeActionsSlot';
+import { SmbViewSwitcher } from '@/smb-shell/view-bar/components/SmbViewSwitcher';
 
 import { ObjectFilterDropdownComponentInstanceContext } from '@/object-record/object-filter-dropdown/states/contexts/ObjectFilterDropdownComponentInstanceContext';
 import { getObjectSortDropdownId } from '@/object-record/object-sort-dropdown/utils/getObjectSortDropdownId';
@@ -42,9 +43,7 @@ export const ViewBar = ({
   }
 
   if (isReadOnly) {
-    return (
-      <TopBar className={className} leftComponent={<ViewPickerDropdown />} />
-    );
+    return <TopBar className={className} leftComponent={<SmbViewSwitcher />} />;
   }
 
   return (
@@ -62,7 +61,7 @@ export const ViewBar = ({
       <ViewBarPageTitle />
       <TopBar
         className={className}
-        leftComponent={<ViewPickerDropdown />}
+        leftComponent={<SmbViewSwitcher />}
         rightComponent={
           <>
             <ObjectFilterDropdownComponentInstanceContext.Provider
@@ -72,6 +71,7 @@ export const ViewBar = ({
             </ObjectFilterDropdownComponentInstanceContext.Provider>
             <ObjectSortDropdownButton />
             {optionsDropdownButton}
+            <SmbChromeActionsSlot />
           </>
         }
         bottomComponent={

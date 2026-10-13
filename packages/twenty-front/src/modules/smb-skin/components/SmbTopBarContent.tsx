@@ -14,12 +14,14 @@ import { useSwitchNavigationDrawerMode } from '@/smb-shell/navigation/hooks/useS
 import { SmbTopBarClock } from '@/smb-skin/components/SmbTopBarClock';
 import { SmbTopBarWorkdayStatus } from '@/smb-skin/components/SmbTopBarWorkdayStatus';
 import { useSmbChromePortal } from '@/smb-skin/hooks/useSmbChromePortal';
+import { smbChromeTopBarActionsHostState } from '@/smb-skin/states/smbChromeTopBarActionsHostState';
 import { smbSidebarOpenState } from '@/smb-skin/states/smbSidebarOpenState';
 import { MultiWorkspaceDropdownButton } from '@/ui/navigation/navigation-drawer/components/MultiWorkspaceDropdown/MultiWorkspaceDropdownButton';
 import { NavigationDrawerCollapseButton } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerCollapseButton';
 import { NAVIGATION_DRAWER_TABS } from '@/ui/navigation/states/navigationDrawerTabs';
 import { useAtomState } from '@/ui/utilities/state/jotai/hooks/useAtomState';
 import { useAtomStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomStateValue';
+import { useSetAtomState } from '@/ui/utilities/state/jotai/hooks/useSetAtomState';
 
 const StyledStart = styled.div`
   align-items: center;
@@ -46,6 +48,17 @@ const StyledCenter = styled.div`
   min-width: 0;
 `;
 
+const StyledPageActionsSlot = styled.div`
+  align-items: center;
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+
+  &:empty {
+    display: none;
+  }
+`;
+
 const StyledEnd = styled.div`
   align-items: center;
   display: flex;
@@ -59,15 +72,15 @@ export const SmbTopBarContent = () => {
   const { t } = useLingui();
   const [smbSidebarOpen, setSmbSidebarOpen] = useAtomState(smbSidebarOpenState);
   const isNavigationDrawerExpanded = useNavigationDrawerExpanded();
-  const {
-    showSidebar,
-    showTopModeTabs,
-    showTopWorkspaceTabs,
-  } = useNavigationChromeLayout();
+  const { showSidebar, showTopModeTabs, showTopWorkspaceTabs } =
+    useNavigationChromeLayout();
   const activeNavigationDrawerMode = useActiveNavigationDrawerMode();
   const { switchNavigationDrawerMode } = useSwitchNavigationDrawerMode();
   const { openMenuSearchPalette } = useOpenMenuSearchPalette();
   const { setTitle: setSmbChromeTitlePortal } = useSmbChromePortal();
+  const setSmbChromeTopBarActionsHost = useSetAtomState(
+    smbChromeTopBarActionsHostState,
+  );
   const isLayoutCustomizationModeEnabled = useAtomStateValue(
     isLayoutCustomizationModeEnabledState,
   );
@@ -106,6 +119,10 @@ export const SmbTopBarContent = () => {
         {showWorkspaceTabs && <TopWorkspaceNavigationTabs />}
       </StyledCenter>
       <StyledEnd data-smb-top-actions>
+        <StyledPageActionsSlot
+          data-smb-chrome-actions
+          ref={setSmbChromeTopBarActionsHost}
+        />
         <LightIconButton
           emphasis="standard"
           size="md"

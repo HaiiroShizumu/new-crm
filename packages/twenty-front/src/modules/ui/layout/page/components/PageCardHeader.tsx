@@ -126,7 +126,11 @@ export const PageCardHeader = ({
     <Breadcrumb links={links} />
   ) : null;
 
-  if (workspaceSurface.type === 'side-panel') {
+  // P-025: any surface that provides a header host gets the portaled header
+  if (
+    workspaceSurface.type === 'side-panel' ||
+    isDefined(workspaceSurfaceHeaderPortal.title)
+  ) {
     return (
       <>
         {isDefined(workspaceSurfaceHeaderPortal.title) &&

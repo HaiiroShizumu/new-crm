@@ -33,7 +33,8 @@ const StyledPopup = styled.div`
 `;
 
 const StyledSearchRow = styled.div`
-  border-bottom: 1px solid var(--smb-border-l1, ${themeCssVariables.border.color.light});
+  border-bottom: 1px solid
+    var(--smb-border-l1, ${themeCssVariables.border.color.light});
   padding: ${themeCssVariables.spacing[3]} ${themeCssVariables.spacing[4]};
 `;
 
@@ -271,10 +272,12 @@ export const MenuSearchPalette = () => {
             width: 'min(820px, calc(100vw - 48px))',
             maxHeight: 'min(78vh, 720px)',
             overflow: 'hidden',
-            background: 'var(--smb-surface-l1, var(--t-background-transparent-primary))',
+            background:
+              'var(--smb-surface-l1, var(--t-background-transparent-primary))',
             backdropFilter: 'blur(var(--smb-blur-l1, 24px))',
             WebkitBackdropFilter: 'blur(var(--smb-blur-l1, 24px))',
-            border: '1px solid var(--smb-border-l1, var(--t-border-color-medium))',
+            border:
+              '1px solid var(--smb-border-l1, var(--t-border-color-medium))',
             borderRadius: 'var(--radius-panel, var(--t-border-radius-xl))',
             boxShadow: 'var(--smb-shadow-l1, var(--t-box-shadow-strong))',
             isolation: 'isolate',

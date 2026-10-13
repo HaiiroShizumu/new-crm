@@ -1,0 +1,9 @@
+{
+  "presets": [
+    {
+      "key": "company-basic",
+      "label": "Базовый набор компании",
+      "modules": ["org-structure", "tasks", "absences", "feed"]
+    }
+  ]
+}

@@ -8,7 +8,7 @@ import { TaskUpdateOnePreHookStub } from 'src/modules/smb-core/hooks/task-update
  * guard'а @RequireSmbModule — TODO M-4).
  *
  * Подключается в дерево приложения единственным швом P-002
- * (см. src/modules/modules.module.ts).
+ * (см. src/engine/core-modules/core-engine.module.ts, ADR-013 п.1).
  */
 @Module({
   providers: [TaskUpdateOnePreHookStub],

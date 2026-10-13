@@ -1,7 +1,11 @@
 import { useLingui } from '@lingui/react/macro';
 import { isNonEmptyString } from '@sniptt/guards';
 import { useMemo } from 'react';
-import { AppPath, NavigationMenuItemType, SettingsPath } from 'twenty-shared/types';
+import {
+  AppPath,
+  NavigationMenuItemType,
+  SettingsPath,
+} from 'twenty-shared/types';
 import { getSettingsPath, isDefined } from 'twenty-shared/utils';
 import { IconSettings, useIcons } from 'twenty-ui/icon';
 
@@ -23,7 +27,10 @@ import { NAVIGATION_DRAWER_TABS } from '@/ui/navigation/states/navigationDrawerT
 import { useAtomStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomStateValue';
 import { viewsSelector } from '@/views/states/selectors/viewsSelector';
 import { useIsFeatureEnabled } from '@/workspace/hooks/useIsFeatureEnabled';
-import { FeatureFlagKey, type NavigationMenuItem } from '~/generated-metadata/graphql';
+import {
+  FeatureFlagKey,
+  type NavigationMenuItem,
+} from '~/generated-metadata/graphql';
 
 const flattenSettingsNavigationItems = (
   items: SettingsNavigationItem[],
@@ -101,7 +108,8 @@ export const useMenuSearchEntries = (): MenuSearchEntry[] => {
 
     const favoriteItems = [
       ...navigationMenuItemsSorted.filter(
-        (item) => !isDefined(item.folderId) && !isNavigationMenuItemFolder(item),
+        (item) =>
+          !isDefined(item.folderId) && !isNavigationMenuItemFolder(item),
       ),
       ...userNavigationMenuItemsByFolder.flatMap(
         (folder) => folder.navigationMenuItems,

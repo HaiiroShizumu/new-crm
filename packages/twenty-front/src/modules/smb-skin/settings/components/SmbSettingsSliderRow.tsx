@@ -10,10 +10,23 @@ const StyledSliderRow = styled.div`
   gap: ${themeCssVariables.spacing[1]};
 `;
 
+const StyledSliderHeader = styled.div`
+  align-items: baseline;
+  display: flex;
+  gap: ${themeCssVariables.spacing[2]};
+  justify-content: space-between;
+`;
+
 const StyledSliderLabel = styled.div`
   color: ${themeCssVariables.font.color.primary};
   font-size: ${themeCssVariables.font.size.sm};
   font-weight: ${themeCssVariables.font.weight.medium};
+`;
+
+const StyledSliderValue = styled.div`
+  color: ${themeCssVariables.font.color.tertiary};
+  font-size: ${themeCssVariables.font.size.sm};
+  font-variant-numeric: tabular-nums;
 `;
 
 const StyledSliderHint = styled.div`
@@ -22,7 +35,8 @@ const StyledSliderHint = styled.div`
 `;
 
 type SmbSettingsSliderRowProps = {
-  label?: ReactNode;
+  label: ReactNode;
+  valueLabel?: ReactNode;
   hint?: ReactNode;
   ariaLabel: string;
   min: number;
@@ -35,6 +49,7 @@ type SmbSettingsSliderRowProps = {
 
 export const SmbSettingsSliderRow = ({
   label,
+  valueLabel,
   hint,
   ariaLabel,
   min,
@@ -45,9 +60,12 @@ export const SmbSettingsSliderRow = ({
   onChange,
 }: SmbSettingsSliderRowProps) => (
   <StyledSliderRow>
-    {isDefined(label) && label !== '' && (
+    <StyledSliderHeader>
       <StyledSliderLabel>{label}</StyledSliderLabel>
-    )}
+      {isDefined(valueLabel) && (
+        <StyledSliderValue>{valueLabel}</StyledSliderValue>
+      )}
+    </StyledSliderHeader>
     <Slider.Root
       min={min}
       max={max}

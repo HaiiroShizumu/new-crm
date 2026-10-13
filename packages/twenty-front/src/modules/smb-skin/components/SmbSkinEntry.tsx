@@ -19,7 +19,9 @@ export const SmbSkinEntry = () => {
   const persistedColorScheme = useAtomStateValue(persistedColorSchemeState);
   const systemColorScheme = useSystemColorScheme();
   const effectiveColorScheme =
-    persistedColorScheme === 'System' ? systemColorScheme : persistedColorScheme;
+    persistedColorScheme === 'System'
+      ? systemColorScheme
+      : persistedColorScheme;
 
   return (
     <SmbSkinProviderEffect
