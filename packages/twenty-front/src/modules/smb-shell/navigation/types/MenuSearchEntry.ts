@@ -1,6 +1,6 @@
 import { type IconComponent } from 'twenty-ui/icon';
 
-import { type NavigationDrawerActiveTab } from '@/ui/navigation/states/navigationDrawerTabs';
+import { type SmbNavigationDrawerMode } from '@/smb-shell/navigation/constants/SmbNavigationDrawerModes';
 
 export type MenuSearchEntrySection = 'mode' | 'menu' | 'settings';
 
@@ -10,5 +10,5 @@ export type MenuSearchEntry = {
   path: string;
   Icon: IconComponent;
   section: MenuSearchEntrySection;
-  mode?: NavigationDrawerActiveTab;
+  mode?: SmbNavigationDrawerMode;
 };

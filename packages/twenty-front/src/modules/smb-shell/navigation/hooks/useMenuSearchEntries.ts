@@ -1,3 +1,5 @@
+import { SMB_CONVERSATIONS_PATH } from '@/smb-conversations/constants/SmbConversationsPath';
+import { SMB_NAVIGATION_DRAWER_MODES } from '@/smb-shell/navigation/constants/SmbNavigationDrawerModes';
 import { useLingui } from '@lingui/react/macro';
 import { isNonEmptyString } from '@sniptt/guards';
 import { useMemo } from 'react';
@@ -82,6 +84,9 @@ export const useMenuSearchEntries = (): MenuSearchEntry[] => {
       switch (mode.mode) {
         case NAVIGATION_DRAWER_TABS.NAVIGATION_MENU:
           path = AppPath.Index;
+          break;
+        case SMB_NAVIGATION_DRAWER_MODES.MESSENGER:
+          path = SMB_CONVERSATIONS_PATH;
           break;
         default:
           break;

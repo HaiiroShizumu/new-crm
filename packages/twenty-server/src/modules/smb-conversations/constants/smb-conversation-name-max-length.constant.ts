@@ -1,0 +1,1 @@
+export const SMB_CONVERSATION_NAME_MAX_LENGTH = 120;

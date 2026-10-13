@@ -1,0 +1,1 @@
+export const SMB_CONVERSATION_MENTION_OBJECT_NAME_SINGULAR = 'workspaceMember';

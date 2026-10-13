@@ -19,6 +19,10 @@ export const filterEnabledSmbModules = (
   > = {},
 ): SmbModuleManifest[] =>
   manifests.filter((manifest) => {
+    if (manifest.isPlatform === true) {
+      return true;
+    }
+
     const { applicationUniversalIdentifier } = manifest;
 
     if (!installedUniversalIdentifiers.has(applicationUniversalIdentifier)) {

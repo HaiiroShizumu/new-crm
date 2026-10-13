@@ -26,6 +26,10 @@ export type SmbModuleEmbedSurface = {
 
 export type SmbModuleManifest = {
   key: string;
+  // Платформенный модуль есть в каждой компании и не имеет App-выключателя
+  // (уведомления, беседы — ADR-010). Для него applicationUniversalIdentifier
+  // служит только ключом и ни с каким установленным App не сверяется.
+  isPlatform?: boolean;
   applicationUniversalIdentifier: string;
   dependsOn: readonly string[];
   routes: readonly SmbModuleRoute[];

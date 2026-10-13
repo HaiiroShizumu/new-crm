@@ -1,18 +1,18 @@
 import { useLingui } from '@lingui/react/macro';
 import { WorkspaceActivationStatus } from 'twenty-shared/workspace';
-import { type IconComponent } from 'twenty-ui/icon';
+import { type IconComponent, IconMessageCircle } from 'twenty-ui/icon';
 
 import { IconHomeMode } from '@/smb-shell/navigation/branding/components/IconHomeMode';
 import {
-  type NavigationDrawerActiveTab,
-  NAVIGATION_DRAWER_TABS,
-} from '@/ui/navigation/states/navigationDrawerTabs';
+  SMB_NAVIGATION_DRAWER_MODES,
+  type SmbNavigationDrawerMode,
+} from '@/smb-shell/navigation/constants/SmbNavigationDrawerModes';
 import { useIsWorkspaceActivationStatusEqualsTo } from '@/workspace/hooks/useIsWorkspaceActivationStatusEqualsTo';
 
 export type NavigationDrawerMode = {
   Icon: IconComponent;
   label: string;
-  mode: NavigationDrawerActiveTab;
+  mode: SmbNavigationDrawerMode;
 };
 
 // U-2 (перенос v2.42.6 -> v2.45.6): в старом билде список режимов ящика
@@ -37,7 +37,12 @@ export const useNavigationDrawerModes = (): NavigationDrawerMode[] => {
     {
       Icon: IconHomeMode,
       label: t`CRM`,
-      mode: NAVIGATION_DRAWER_TABS.NAVIGATION_MENU,
+      mode: SMB_NAVIGATION_DRAWER_MODES.NAVIGATION_MENU,
+    },
+    {
+      Icon: IconMessageCircle,
+      label: t`Чаты`,
+      mode: SMB_NAVIGATION_DRAWER_MODES.MESSENGER,
     },
   ];
 };

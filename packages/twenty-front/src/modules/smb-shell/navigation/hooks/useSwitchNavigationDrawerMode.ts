@@ -1,3 +1,9 @@
+import { SMB_CONVERSATIONS_PATH } from '@/smb-conversations/constants/SmbConversationsPath';
+import { isSmbConversationsPath } from '@/smb-conversations/utils/isSmbConversationsPath';
+import {
+  SMB_NAVIGATION_DRAWER_MODES,
+  type SmbNavigationDrawerMode,
+} from '@/smb-shell/navigation/constants/SmbNavigationDrawerModes';
 import { useIsMobile } from 'twenty-ui/utilities';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SettingsPath } from 'twenty-shared/types';
@@ -14,10 +20,7 @@ import { getNavigationDrawerHomeDestination } from '@/smb-shell/navigation/utils
 import { isNavigationDrawerExpandedState } from '@/ui/navigation/states/isNavigationDrawerExpanded';
 import { navigationDrawerActiveTabState } from '@/ui/navigation/states/navigationDrawerActiveTabState';
 import { navigationDrawerExpandedMemorizedState } from '@/ui/navigation/states/navigationDrawerExpandedMemorizedState';
-import {
-  type NavigationDrawerActiveTab,
-  NAVIGATION_DRAWER_TABS,
-} from '@/ui/navigation/states/navigationDrawerTabs';
+import { NAVIGATION_DRAWER_TABS } from '@/ui/navigation/states/navigationDrawerTabs';
 import { navigationMemorizedUrlState } from '@/ui/navigation/states/navigationMemorizedUrlState';
 import { useAtomStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomStateValue';
 import { useSetAtomState } from '@/ui/utilities/state/jotai/hooks/useSetAtomState';
@@ -34,6 +37,7 @@ export const useSwitchNavigationDrawerMode = () => {
   const isSettingsDrawer = useIsSettingsDrawer();
   const isSettingsPage = useIsSettingsPage();
   const isAiChatPage = isAiChatPath(location.pathname);
+  const isMessengerPage = isSmbConversationsPath(location.pathname);
 
   const navigationMemorizedUrl = useAtomStateValue(navigationMemorizedUrlState);
   const navigationDrawerExpandedMemorized = useAtomStateValue(
@@ -83,6 +87,15 @@ export const useSwitchNavigationDrawerMode = () => {
       returnFromExpandedAiChat();
       return;
     }
+
+    if (isMessengerPage) {
+      navigate(
+        getNavigationDrawerHomeDestination({
+          memorizedUrl: navigationMemorizedUrl,
+          defaultHomePagePath,
+        }),
+      );
+    }
   };
 
   const switchToAiChat = () => {
@@ -93,7 +106,7 @@ export const useSwitchNavigationDrawerMode = () => {
 
   // The AI mode also covers the chat history listed next to another page, so it
   // is the chat page rather than the active mode that makes a click a no-op.
-  const switchNavigationDrawerMode = (mode: NavigationDrawerActiveTab) => {
+  const switchNavigationDrawerMode = (mode: SmbNavigationDrawerMode) => {
     switch (mode) {
       case NAVIGATION_DRAWER_TABS.NAVIGATION_MENU:
         if (
@@ -102,6 +115,16 @@ export const useSwitchNavigationDrawerMode = () => {
           return;
         }
         switchToNavigationMenu();
+        break;
+      case SMB_NAVIGATION_DRAWER_MODES.MESSENGER:
+        if (isMessengerPage) {
+          return;
+        }
+        // Режим «Чаты» задаётся адресом; сохранённая вкладка остаётся «домом»,
+        // чтобы уход со страницы чатов возвращал обычное меню.
+        setCurrentMobileNavigationDrawer('main');
+        setNavigationDrawerActiveTab(NAVIGATION_DRAWER_TABS.NAVIGATION_MENU);
+        navigate(SMB_CONVERSATIONS_PATH);
         break;
       case NAVIGATION_DRAWER_TABS.AI_CHAT_HISTORY:
         if (isAiChatPage) {

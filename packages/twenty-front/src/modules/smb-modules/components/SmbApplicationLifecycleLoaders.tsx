@@ -39,7 +39,9 @@ const SmbApplicationLifecycleLoaderEffect = ({
     },
   );
 
-  const setSmbApplicationLifecycle = useSetAtomState(smbApplicationLifecycleState);
+  const setSmbApplicationLifecycle = useSetAtomState(
+    smbApplicationLifecycleState,
+  );
 
   const lifecycle = getSmbApplicationLifecycle({
     canSeeJobStatus,
@@ -64,7 +66,9 @@ const SmbApplicationLifecycleLoaderEffect = ({
 // реестром и не меняется во время работы — число загрузчиков статично.
 export const SmbApplicationLifecycleLoaders = () => (
   <>
-    {SMB_MODULE_MANIFESTS.map((manifest) => (
+    {SMB_MODULE_MANIFESTS.filter(
+      (manifest) => manifest.isPlatform !== true,
+    ).map((manifest) => (
       <SmbApplicationLifecycleLoaderEffect
         key={manifest.key}
         universalIdentifier={manifest.applicationUniversalIdentifier}

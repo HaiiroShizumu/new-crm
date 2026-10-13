@@ -55,6 +55,9 @@ npx nx run twenty-front:graphql:generate      # after GraphQL schema changes (--
 
 Правила форка Twenty (база и порядок обновления — `docs/arch/UPSTREAM_BASE.md`, реестр правок — `docs/PATCHES.md`):
 
+- Рабочий каталог один: этот (`/workspace/twenty-core` в контейнере hermes, на Mac —
+  `~/SandBox/hermes/workspace/twenty-core`). Клон `~/SandBox/twenty-rebuild/twenty-core` разошёлся с ним;
+  его документы, номера ADR и реестра сюда не применять (`../DIRECTIVE.md` §2).
 - Новый код — в наших каталогах: `docs/`, `scripts/`, `smb/`, `apps/`, `packages/smb-*`,
   `.claude/`, `.cursor/`, `.github/workflows/fork-`, для визуала —
   `packages/twenty-front/src/modules/smb-*` (M2, решение владельца 2026-10-09), для серверной
@@ -66,7 +69,8 @@ npx nx run twenty-front:graphql:generate      # after GraphQL schema changes (--
 - Ослабление гейта (OURS, allowlist) — только отдельным коммитом с ревью владельца и bats-кейсами.
 - Не писать «тест прошёл», если тест не запускался: указывать `NOT RUN` и причину.
 - Тяжёлое (`docker build`, `nx build`, `jest` целиком, Playwright, гонки по истории) — с согласования,
-  `nice -n 19`, и не при swap > 80% (`sysctl vm.swapusage`).
+  `nice -n 19`, по одному; память в контейнере — `free -m` (на Mac — `sysctl vm.swapusage`, не при swap > 80%).
+  `node_modules` собраны под linux-arm64: `yarn`, `jest`, `oxlint`, `nx` запускать в контейнере, не на Mac.
 - Не коммитить `locales/*.po` и `locales/generated/*`, если задача не про переводы.
 - Обновление с upstream — только по регламенту `docs/arch/UPSTREAM_BASE.md` (ветка `update/upstream-<тег>`, конфликты разрешаются только по реестру `docs/PATCHES.md`).
 - Каждую завершённую задачу — отчётом в `docs/reports/` (Сделано / Подтверждено / NOT RUN / Расхождения / Вопросы) + записью в `docs/CONTEXT-LOG.md`.
