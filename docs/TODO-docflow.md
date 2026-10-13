@@ -90,12 +90,12 @@ cd ../.. && npx jest packages/twenty-server/src/modules/smb-bitrix --config=pack
   Карточка это `button`, клик вызывает `onClick`. В `SmbDocflowTasksTab.tsx` раздел «Ждут вас»
   показать карточками в один ряд с горизонтальной прокруткой (`overflow-x: auto`). Раздел
   «Остальные задания» не трогать. `docs/reports/R20.md`.
-- [ ] **H-6. Таблица остальных заданий** (после H-4). Раздел «Остальные задания» сделать таблицей
+- [x] **H-6. Таблица остальных заданий** (после H-4). Раздел «Остальные задания» сделать таблицей
   (`table`, `th`, `td`): задание, процесс, исполнитель, срок, создано. Имя исполнителя: хук
   `useFindManyRecords({ objectNameSingular: CoreObjectNameSingular.WorkspaceMember })`, сопоставить
   по `task.assigneeWorkspaceMemberId`, показать `name.firstName` и `name.lastName`; исполнителя нет
   — прочерк. Строки отсортировать через `sortSmbDocflowTasks`. Клик по строке выбирает задание, как
-  сейчас.
+  сейчас. `docs/reports/R21.md`.
 - [ ] **H-7. Панель предпросмотра.** `components/SmbDocflowSplitLayout.tsx`: добавить проп
   `onClose: () => void` и кнопку закрытия (`LightIconButton` с `IconX`, `aria-label` «Закрыть») в
   правом верхнем углу панели. Анимация появления: `transition` ширины длительностью
