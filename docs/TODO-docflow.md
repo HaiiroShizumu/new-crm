@@ -136,12 +136,12 @@ cd ../.. && npx jest packages/twenty-server/src/modules/smb-bitrix --config=pack
   из корня репозитория
   `node -e "require('yaml').parse(require('fs').readFileSync('smb/deploy/docker-compose.yml','utf8'),{merge:true});console.log('yaml ok')"`
   и вывод. `docs/reports/R25.md`.
-- [ ] **H-11. Документ для оператора** `docs/ops/bitrix-app.md`: что вписать в карточку приложения
+- [x] **H-11. Документ для оператора** `docs/ops/bitrix-app.md`: что вписать в карточку приложения
   в кабинете вендора Б24. Адрес приложения `https://<корень>/webhooks/smb-bitrix/app`, адрес
   установки `…/install`, обработчик событий `…/event` для `ONAPPINSTALL` и `ONAPPUNINSTALL`, права
   `user`. Где взять `client_id` и `client_secret` и в какие переменные их положить (H-10). Что
   портал после установки остаётся `PENDING`, пока его не привязали командой из H-13. Только то, что
-  следует из ADR-015 и кода `smb-bitrix`; чего там нет, не выдумывать.
+  следует из ADR-015 и кода `smb-bitrix`; чего там нет, не выдумывать. `docs/reports/R26.md`.
 - [ ] **H-12. Тест `SmbBitrixPortalService.isApplicationTokenValid`.** Файл
   `packages/twenty-server/src/modules/smb-bitrix/services/__tests__/smb-bitrix-portal.service.spec.ts`,
   зависимости заглушками по образцу `smb-bitrix-launch.service.spec.ts`. Случаи: верный токен →

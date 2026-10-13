@@ -9,6 +9,16 @@
 
 ---
 
+## Запись 29 — 2026-10-13 (Hermes, H-11: документ для оператора Б24)
+
+**Сделано:** H-11 — новый `docs/ops/bitrix-app.md`: адреса карточки приложения (`…/webhooks/smb-bitrix/{app,install,event}`, события `ONAPPINSTALL`/`ONAPPUNINSTALL`), права `user`, переменные из H-10 и как их подхватить, статусы портала `PENDING → ACTIVE → UNINSTALLED`, привязка командой из H-13, smoke-проверка по R14. Отчёт — `docs/reports/R26.md`.
+
+**Подтверждено:** все 13 упомянутых путей существуют, процитированные строки сверены с файлами (вывод в R26). **NOT RUN:** сверка с кабинетом вендора Б24; код не менялся, lint/jest не запускались.
+
+**Открыто:** H-12, H-13, H-14, затем блок «Документы» H-15…H-19.
+
+---
+
 ## Запись 28 — 2026-10-13 (Hermes, H-10: переменные канала Б24 в compose)
 
 **Сделано:** H-10 — в `smb/deploy/docker-compose.yml` (блок `x-app-environment`) добавлены `SMB_BITRIX_CLIENT_ID`, `SMB_BITRIX_CLIENT_SECRET`, `SMB_BITRIX_AUTO_PROVISION_WORKSPACE`, в `smb/deploy/.env.example` те же три имени с пустыми значениями (лежали закомментированными — раскомментированы). Отчёт — `docs/reports/R25.md`.
